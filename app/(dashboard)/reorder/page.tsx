@@ -21,11 +21,11 @@ export default async function ReorderPage() {
   const { data } = await supabase
     .from("inventory_items")
     .select("*, supplier:suppliers(name)")
-    .filter("quantity_on_hand", "lte", "minimum_threshold")
     .eq("status", "active")
     .order("quantity_on_hand");
 
-  const items = (data ?? []) as (InventoryItem & { supplier: { name: string } | null })[];
+  const items = ((data ?? []) as (InventoryItem & { supplier: { name: string } | null })[])
+    .filter((item) => item.quantity_on_hand <= item.minimum_threshold);
 
   return (
     <div className="space-y-6">
