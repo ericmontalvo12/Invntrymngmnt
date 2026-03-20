@@ -74,7 +74,7 @@ export function MobileDrawer({ role, open, onClose }: MobileDrawerProps) {
         <div className="flex h-16 items-center justify-between border-b px-6">
           <div className="flex items-center gap-2">
             <Package className="h-6 w-6 text-primary" />
-            <span className="text-lg font-bold">Vantory</span>
+            <span className="text-lg font-bold">Genco</span>
           </div>
           <button
             onClick={onClose}
