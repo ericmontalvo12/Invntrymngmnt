@@ -70,8 +70,8 @@ export function CameraScanner({ onScan, onClose }: CameraScannerProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-black">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 text-white">
+      {/* Header — padded below status bar on iPhone */}
+      <div className="flex items-center justify-between px-4 py-3 text-white [padding-top:max(0.75rem,env(safe-area-inset-top))]">
         <span className="text-sm font-medium">Point camera at barcode</span>
         <Button
           variant="ghost"
@@ -86,7 +86,7 @@ export function CameraScanner({ onScan, onClose }: CameraScannerProps) {
       {/* Camera / error area */}
       <div className="relative flex-1 overflow-hidden">
         {error ? (
-          <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center text-white">
+          <div className="flex h-full flex-col items-center justify-center gap-4 px-8 text-center text-white [padding-bottom:env(safe-area-inset-bottom)]">
             <p className="text-amber-400">{error}</p>
             <Button variant="outline" onClick={onClose}>
               Go Back
@@ -117,7 +117,7 @@ export function CameraScanner({ onScan, onClose }: CameraScannerProps) {
                 <span className="absolute inset-x-2 h-0.5 bg-primary/80 [animation:scan-line_2s_ease-in-out_infinite]" />
               </div>
 
-              <p className="absolute bottom-16 text-xs text-white/60">
+              <p className="absolute text-xs text-white/60 [bottom:max(4rem,calc(env(safe-area-inset-bottom)+1rem))]">
                 Align the barcode within the frame
               </p>
             </div>
