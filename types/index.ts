@@ -7,6 +7,12 @@ export type TransactionType =
   | "received"
   | "dispatch";
 export type ReorderStatus = "needs_reorder" | "ordered" | "received";
+export type POStatus =
+  | "draft"
+  | "ordered"
+  | "partially_received"
+  | "received"
+  | "voided";
 
 export interface Profile {
   id: string;
@@ -93,6 +99,57 @@ export interface DashboardStats {
   outOfStockItems: number;
   recentTransactions: InventoryTransaction[];
   reorderItems: InventoryItem[];
+}
+
+export interface Project {
+  id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Building {
+  id: string;
+  name: string;
+  address: string | null;
+  description: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseOrderItem {
+  id: string;
+  purchase_order_id: string;
+  item_id: string | null;
+  item_name: string;
+  item_sku: string;
+  quantity_ordered: number;
+  quantity_received: number;
+  unit_cost: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PurchaseOrder {
+  id: string;
+  po_number: string;
+  vendor_id: string | null;
+  project_id: string | null;
+  building_id: string | null;
+  apartment_unit: string | null;
+  expected_delivery: string | null;
+  special_instructions: string | null;
+  status: POStatus;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined
+  vendor?: Supplier | null;
+  project?: Project | null;
+  building?: Building | null;
+  items?: PurchaseOrderItem[];
 }
 
 export type ActionResult<T = void> =

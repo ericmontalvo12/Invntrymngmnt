@@ -51,7 +51,7 @@ export function TopNav({ profile }: TopNavProps) {
         onClose={() => setDrawerOpen(false)}
       />
 
-      <header className="flex h-16 items-center justify-between border-b bg-card px-4">
+      <header className="flex h-16 items-center justify-between border-b bg-card px-4 print:hidden">
         {/* Hamburger — mobile only */}
         <Button
           variant="ghost"
