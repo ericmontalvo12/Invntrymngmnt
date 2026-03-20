@@ -32,7 +32,6 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
-  const [showCamera, setShowCamera] = useState(false);
   const [formData, setFormData] = useState({
     name: item?.name ?? "",
     sku: item?.sku ?? "",
