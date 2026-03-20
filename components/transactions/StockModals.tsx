@@ -69,6 +69,7 @@ export function AddStockModal({ itemId, itemName, currentQty }: StockModalProps)
               min={1}
               value={qty}
               onChange={(e) => setQty(Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
               required
             />
           </div>
@@ -140,6 +141,7 @@ export function RemoveStockModal({ itemId, itemName, currentQty }: StockModalPro
               max={currentQty}
               value={qty}
               onChange={(e) => setQty(Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
               required
             />
           </div>
@@ -214,6 +216,7 @@ export function AdjustStockModal({ itemId, itemName, currentQty }: StockModalPro
               min={0}
               value={newQty}
               onChange={(e) => setNewQty(Number(e.target.value))}
+              onFocus={(e) => e.target.select()}
               required
             />
           </div>
