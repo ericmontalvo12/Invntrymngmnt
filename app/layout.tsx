@@ -3,7 +3,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: "StockFlow — Inventory Management",
+  title: "Vantory — Inventory Management",
   description: "Real-time inventory management for your business team",
 };
 

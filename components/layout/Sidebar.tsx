@@ -51,7 +51,7 @@ export function Sidebar({ role }: SidebarProps) {
       <div className="flex h-16 items-center border-b px-6">
         <div className="flex items-center gap-2">
           <Package className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold">StockFlow</span>
+          <span className="text-lg font-bold">Vantory</span>
         </div>
       </div>
 
