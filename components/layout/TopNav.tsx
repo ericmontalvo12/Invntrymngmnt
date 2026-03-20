@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { RoleBadge } from "@/components/shared/StatusBadge";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { createClient } from "@/lib/supabase/client";
 import type { Profile } from "@/types";
 
@@ -42,6 +43,8 @@ export function TopNav({ profile }: TopNavProps) {
   return (
     <header className="flex h-16 items-center justify-between border-b bg-card px-6">
       <div />
+      <div className="flex items-center gap-2">
+      <ThemeToggle />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="flex items-center gap-2 px-2">
@@ -74,6 +77,7 @@ export function TopNav({ profile }: TopNavProps) {
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
+      </div>
     </header>
   );
 }
