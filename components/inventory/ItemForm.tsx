@@ -15,6 +15,8 @@ import {
 } from "@/components/ui/select";
 import { createInventoryItem, updateInventoryItem } from "@/lib/actions/inventory";
 import { toast } from "@/lib/hooks/useToast";
+import { CameraScanner } from "@/components/scan/CameraScanner";
+import { Camera } from "lucide-react";
 import type { Category, InventoryItem, Location, Supplier } from "@/types";
 
 interface ItemFormProps {
@@ -29,6 +31,8 @@ const NONE_VALUE = "__none__";
 export function ItemForm({ item, categories, locations, suppliers }: ItemFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const [formData, setFormData] = useState({
     name: item?.name ?? "",
     sku: item?.sku ?? "",
@@ -82,6 +86,13 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
   }
 
   return (
+    <>
+      {showCamera && (
+        <CameraScanner
+          onScan={(value) => { set("upc", value); setShowCamera(false); }}
+          onClose={() => setShowCamera(false)}
+        />
+      )}
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Basic Info */}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -107,12 +118,24 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
         </div>
         <div className="space-y-2">
           <Label htmlFor="upc">UPC / Barcode</Label>
-          <Input
-            id="upc"
-            value={formData.upc}
-            onChange={(e) => set("upc", e.target.value)}
-            placeholder="012345678905"
-          />
+          <div className="flex gap-2">
+            <Input
+              id="upc"
+              value={formData.upc}
+              onChange={(e) => set("upc", e.target.value)}
+              placeholder="012345678905"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => setShowCamera(true)}
+              aria-label="Scan barcode with camera"
+              title="Scan with camera"
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
         <div className="space-y-2">
           <Label htmlFor="unit_type">Unit Type</Label>
@@ -284,5 +307,6 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
         </Button>
       </div>
     </form>
+    </>
   );
 }
