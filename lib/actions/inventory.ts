@@ -186,7 +186,7 @@ export async function removeStock(formData: unknown): Promise<ActionResult> {
 
   const { data: item, error: fetchError } = await supabase
     .from("inventory_items")
-    .select("quantity_on_hand")
+    .select("quantity_on_hand, minimum_threshold")
     .eq("id", parsed.data.item_id)
     .single();
 
@@ -204,10 +204,11 @@ export async function removeStock(formData: unknown): Promise<ActionResult> {
   }
 
   const finalQty = Math.max(0, quantityAfter);
+  const autoReorder = finalQty <= item.minimum_threshold ? { reorder_status: "needs_reorder" } : {};
 
   const { error: updateError } = await supabase
     .from("inventory_items")
-    .update({ quantity_on_hand: finalQty })
+    .update({ quantity_on_hand: finalQty, ...autoReorder })
     .eq("id", parsed.data.item_id);
 
   if (updateError) return { success: false, error: updateError.message };
@@ -249,7 +250,7 @@ export async function adjustStock(formData: unknown): Promise<ActionResult> {
 
   const { data: item, error: fetchError } = await supabase
     .from("inventory_items")
-    .select("quantity_on_hand")
+    .select("quantity_on_hand, minimum_threshold")
     .eq("id", parsed.data.item_id)
     .single();
 
@@ -258,10 +259,11 @@ export async function adjustStock(formData: unknown): Promise<ActionResult> {
   const quantityBefore = item.quantity_on_hand;
   const quantityAfter = parsed.data.new_quantity;
   const quantityChange = quantityAfter - quantityBefore;
+  const autoReorder = quantityAfter <= item.minimum_threshold ? { reorder_status: "needs_reorder" } : {};
 
   const { error: updateError } = await supabase
     .from("inventory_items")
-    .update({ quantity_on_hand: quantityAfter })
+    .update({ quantity_on_hand: quantityAfter, ...autoReorder })
     .eq("id", parsed.data.item_id);
 
   if (updateError) return { success: false, error: updateError.message };
@@ -360,7 +362,7 @@ export async function dispatchStock(formData: unknown): Promise<ActionResult> {
 
   const { data: item, error: fetchError } = await supabase
     .from("inventory_items")
-    .select("quantity_on_hand")
+    .select("quantity_on_hand, minimum_threshold")
     .eq("id", parsed.data.item_id)
     .single();
 
@@ -377,10 +379,11 @@ export async function dispatchStock(formData: unknown): Promise<ActionResult> {
   }
 
   const finalQty = Math.max(0, quantityAfter);
+  const autoReorder = finalQty <= item.minimum_threshold ? { reorder_status: "needs_reorder" } : {};
 
   const { error: updateError } = await supabase
     .from("inventory_items")
-    .update({ quantity_on_hand: finalQty })
+    .update({ quantity_on_hand: finalQty, ...autoReorder })
     .eq("id", parsed.data.item_id);
 
   if (updateError) return { success: false, error: updateError.message };
