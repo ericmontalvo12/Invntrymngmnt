@@ -24,15 +24,15 @@ export default async function EditItemPage({ params }: PageProps) {
 
   if (profile?.role !== "admin") redirect(`/inventory/${id}`);
 
-  const [itemResult, { data: categories }, { data: locations }, { data: suppliers }] =
+  const [itemResult, { data: categories }, { data: buildings }, { data: suppliers }] =
     await Promise.all([
       supabase
         .from("inventory_items")
-        .select("*, category:categories(*), location:locations(*), supplier:suppliers(*)")
+        .select("*, category:categories(*), building:buildings(*), supplier:suppliers(*)")
         .eq("id", id)
         .single(),
       supabase.from("categories").select("*").order("name"),
-      supabase.from("locations").select("*").order("name"),
+      supabase.from("buildings").select("*").order("name"),
       supabase.from("suppliers").select("*").order("name"),
     ]);
 
@@ -52,7 +52,7 @@ export default async function EditItemPage({ params }: PageProps) {
           <ItemForm
             item={itemResult.data as InventoryItem}
             categories={categories ?? []}
-            locations={locations ?? []}
+            buildings={buildings ?? []}
             suppliers={suppliers ?? []}
           />
         </CardContent>

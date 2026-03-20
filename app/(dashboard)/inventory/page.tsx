@@ -15,13 +15,13 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { ItemStatusBadge, StockStatusBadge } from "@/components/shared/StatusBadge";
 import { InventoryFilters } from "@/components/inventory/InventoryFilters";
 import { formatCurrency } from "@/lib/utils";
-import type { Category, InventoryItem, Location, Supplier } from "@/types";
+import type { Building, Category, InventoryItem, Supplier } from "@/types";
 
 interface PageProps {
   searchParams: Promise<{
     q?: string;
     category?: string;
-    location?: string;
+    building?: string;
     supplier?: string;
     stock?: string;
     status?: string;
@@ -33,17 +33,17 @@ export default async function InventoryPage({ searchParams }: PageProps) {
   const supabase = await createClient();
 
   // Fetch filters data
-  const [{ data: categories }, { data: locations }, { data: suppliers }] =
+  const [{ data: categories }, { data: buildings }, { data: suppliers }] =
     await Promise.all([
       supabase.from("categories").select("*").order("name"),
-      supabase.from("locations").select("*").order("name"),
+      supabase.from("buildings").select("*").order("name"),
       supabase.from("suppliers").select("*").order("name"),
     ]);
 
   // Build query
   let query = supabase
     .from("inventory_items")
-    .select("*, category:categories(id,name), location:locations(id,name), supplier:suppliers(id,name)")
+    .select("*, category:categories(id,name), building:buildings(id,name), supplier:suppliers(id,name)")
     .order("name");
 
   if (params.q) {
@@ -52,7 +52,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
     );
   }
   if (params.category) query = query.eq("category_id", params.category);
-  if (params.location) query = query.eq("location_id", params.location);
+  if (params.building) query = query.eq("building_id", params.building);
   if (params.supplier) query = query.eq("supplier_id", params.supplier);
   if (params.status) query = query.eq("status", params.status);
 
@@ -92,7 +92,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
 
       <InventoryFilters
         categories={(categories ?? []) as Category[]}
-        locations={(locations ?? []) as Location[]}
+        buildings={(buildings ?? []) as Building[]}
         suppliers={(suppliers ?? []) as Supplier[]}
       />
 
@@ -116,7 +116,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                 <TableHead>SKU</TableHead>
                 <TableHead>UPC</TableHead>
                 <TableHead>Category</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>Building</TableHead>
                 <TableHead className="text-right">Qty</TableHead>
                 <TableHead>Stock</TableHead>
                 <TableHead>Status</TableHead>
@@ -137,7 +137,7 @@ export default async function InventoryPage({ searchParams }: PageProps) {
                   <TableCell className="text-muted-foreground">{item.sku}</TableCell>
                   <TableCell className="text-muted-foreground">{item.upc ?? "—"}</TableCell>
                   <TableCell>{item.category?.name ?? "—"}</TableCell>
-                  <TableCell>{item.location?.name ?? "—"}</TableCell>
+                  <TableCell>{item.building?.name ?? "—"}</TableCell>
                   <TableCell className="text-right font-medium">
                     {item.quantity_on_hand}
                     <span className="ml-1 text-xs text-muted-foreground">{item.unit_type}</span>

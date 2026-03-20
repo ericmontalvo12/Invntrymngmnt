@@ -5,7 +5,7 @@ export const inventoryItemSchema = z.object({
   sku: z.string().min(1, "SKU is required").max(100),
   upc: z.string().max(50).optional().nullable(),
   category_id: z.string().uuid().optional().nullable(),
-  location_id: z.string().uuid().optional().nullable(),
+  building_id: z.string().uuid().optional().nullable(),
   supplier_id: z.string().uuid().optional().nullable(),
   quantity_on_hand: z.coerce.number().int().min(0, "Quantity cannot be negative"),
   minimum_threshold: z.coerce.number().int().min(0),

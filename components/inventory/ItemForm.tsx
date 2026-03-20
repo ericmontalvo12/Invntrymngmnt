@@ -17,18 +17,18 @@ import { createInventoryItem, updateInventoryItem } from "@/lib/actions/inventor
 import { toast } from "@/lib/hooks/useToast";
 import { CameraScanner } from "@/components/scan/CameraScanner";
 import { Camera } from "lucide-react";
-import type { Category, InventoryItem, Location, Supplier } from "@/types";
+import type { Building, Category, InventoryItem, Supplier } from "@/types";
 
 interface ItemFormProps {
   item?: InventoryItem;
   categories: Category[];
-  locations: Location[];
+  buildings: Building[];
   suppliers: Supplier[];
 }
 
 const NONE_VALUE = "__none__";
 
-export function ItemForm({ item, categories, locations, suppliers }: ItemFormProps) {
+export function ItemForm({ item, categories, buildings, suppliers }: ItemFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [showCamera, setShowCamera] = useState(false);
@@ -37,7 +37,7 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
     sku: item?.sku ?? "",
     upc: item?.upc ?? "",
     category_id: item?.category_id ?? "",
-    location_id: item?.location_id ?? "",
+    building_id: item?.building_id ?? "",
     supplier_id: item?.supplier_id ?? "",
     quantity_on_hand: item?.quantity_on_hand ?? 0,
     minimum_threshold: item?.minimum_threshold ?? 0,
@@ -61,7 +61,7 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
       ...formData,
       upc: formData.upc || null,
       category_id: formData.category_id || null,
-      location_id: formData.location_id || null,
+      building_id: formData.building_id || null,
       supplier_id: formData.supplier_id || null,
       cost_per_unit: formData.cost_per_unit === "" ? null : Number(formData.cost_per_unit),
       notes: formData.notes || null,
@@ -167,18 +167,18 @@ export function ItemForm({ item, categories, locations, suppliers }: ItemFormPro
           </Select>
         </div>
         <div className="space-y-2">
-          <Label>Location</Label>
+          <Label>Building (Location)</Label>
           <Select
-            value={formData.location_id || NONE_VALUE}
-            onValueChange={(v) => set("location_id", v === NONE_VALUE ? "" : v)}
+            value={formData.building_id || NONE_VALUE}
+            onValueChange={(v) => set("building_id", v === NONE_VALUE ? "" : v)}
           >
             <SelectTrigger>
-              <SelectValue placeholder="Select location" />
+              <SelectValue placeholder="Select building" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value={NONE_VALUE}>None</SelectItem>
-              {locations.map((l) => (
-                <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+              {buildings.map((b) => (
+                <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
               ))}
             </SelectContent>
           </Select>

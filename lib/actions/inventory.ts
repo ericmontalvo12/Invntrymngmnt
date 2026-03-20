@@ -46,7 +46,7 @@ export async function createInventoryItem(
   const { data, error } = await supabase
     .from("inventory_items")
     .insert({ ...parsed.data, created_by: session.userId })
-    .select(`*, category:categories(*), location:locations(*), supplier:suppliers(*)`)
+    .select(`*, category:categories(*), building:buildings(*), supplier:suppliers(*)`)
     .single();
 
   if (error) {
@@ -80,7 +80,7 @@ export async function updateInventoryItem(
     .from("inventory_items")
     .update(parsed.data)
     .eq("id", id)
-    .select(`*, category:categories(*), location:locations(*), supplier:suppliers(*)`)
+    .select(`*, category:categories(*), building:buildings(*), supplier:suppliers(*)`)
     .single();
 
   if (error) {

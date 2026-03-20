@@ -18,10 +18,10 @@ export default async function NewItemPage() {
 
   if (profile?.role !== "admin") redirect("/inventory");
 
-  const [{ data: categories }, { data: locations }, { data: suppliers }] =
+  const [{ data: categories }, { data: buildings }, { data: suppliers }] =
     await Promise.all([
       supabase.from("categories").select("*").order("name"),
-      supabase.from("locations").select("*").order("name"),
+      supabase.from("buildings").select("*").order("name"),
       supabase.from("suppliers").select("*").order("name"),
     ]);
 
@@ -35,7 +35,7 @@ export default async function NewItemPage() {
         <CardContent>
           <ItemForm
             categories={categories ?? []}
-            locations={locations ?? []}
+            buildings={buildings ?? []}
             suppliers={suppliers ?? []}
           />
         </CardContent>

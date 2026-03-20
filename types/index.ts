@@ -59,6 +59,7 @@ export interface InventoryItem {
   upc: string | null;
   category_id: string | null;
   location_id: string | null;
+  building_id: string | null;
   supplier_id: string | null;
   quantity_on_hand: number;
   minimum_threshold: number;
@@ -73,7 +74,7 @@ export interface InventoryItem {
   updated_at: string;
   // Joined fields
   category?: Category | null;
-  location?: Location | null;
+  building?: Building | null;
   supplier?: Supplier | null;
 }
 

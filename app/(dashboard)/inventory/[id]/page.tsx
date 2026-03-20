@@ -37,7 +37,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
   const [itemResult, txResult, { data: authData }] = await Promise.all([
     supabase
       .from("inventory_items")
-      .select("*, category:categories(*), location:locations(*), supplier:suppliers(*)")
+      .select("*, category:categories(*), building:buildings(*), supplier:suppliers(*)")
       .eq("id", id)
       .single(),
     supabase
@@ -153,7 +153,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </InfoRow>
               <InfoRow label="Cost per Unit">{formatCurrency(item.cost_per_unit)}</InfoRow>
               <InfoRow label="Category">{item.category?.name ?? "—"}</InfoRow>
-              <InfoRow label="Location">{item.location?.name ?? "—"}</InfoRow>
+              <InfoRow label="Building">{item.building?.name ?? "—"}</InfoRow>
               <InfoRow label="Supplier">{item.supplier?.name ?? "—"}</InfoRow>
               <InfoRow label="Unit Type">{item.unit_type}</InfoRow>
               <InfoRow label="Created">{formatDate(item.created_at)}</InfoRow>

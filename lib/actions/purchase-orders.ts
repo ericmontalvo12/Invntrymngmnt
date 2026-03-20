@@ -278,9 +278,12 @@ export async function receivePurchaseOrderItems(
         const quantityBefore = item.quantity_on_hand;
         const quantityAfter = quantityBefore + received.quantityReceived;
 
+        // Set building_id from PO so item's location reflects where it was received
+        const locationUpdate = po.building_id ? { building_id: po.building_id } : {};
+
         await supabase
           .from("inventory_items")
-          .update({ quantity_on_hand: quantityAfter, reorder_status: "received" })
+          .update({ quantity_on_hand: quantityAfter, reorder_status: "received", ...locationUpdate })
           .eq("id", poItem.item_id);
 
         await supabase.from("inventory_transactions").insert({

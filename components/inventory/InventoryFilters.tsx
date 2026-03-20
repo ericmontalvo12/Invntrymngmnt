@@ -14,17 +14,17 @@ import { Button } from "@/components/ui/button";
 import { Search, X } from "lucide-react";
 import { useDebounce } from "@/lib/hooks/useDebounce";
 import { useEffect, useState } from "react";
-import type { Category, Location, Supplier } from "@/types";
+import type { Building, Category, Supplier } from "@/types";
 
 const ALL_VALUE = "__all__";
 
 interface InventoryFiltersProps {
   categories: Category[];
-  locations: Location[];
+  buildings: Building[];
   suppliers: Supplier[];
 }
 
-export function InventoryFilters({ categories, locations, suppliers }: InventoryFiltersProps) {
+export function InventoryFilters({ categories, buildings, suppliers }: InventoryFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -57,7 +57,7 @@ export function InventoryFilters({ categories, locations, suppliers }: Inventory
   const hasFilters =
     searchParams.has("q") ||
     searchParams.has("category") ||
-    searchParams.has("location") ||
+    searchParams.has("building") ||
     searchParams.has("supplier") ||
     searchParams.has("stock") ||
     searchParams.has("status");
@@ -90,16 +90,16 @@ export function InventoryFilters({ categories, locations, suppliers }: Inventory
       </Select>
 
       <Select
-        value={searchParams.get("location") ?? ALL_VALUE}
-        onValueChange={(v) => updateParam("location", v)}
+        value={searchParams.get("building") ?? ALL_VALUE}
+        onValueChange={(v) => updateParam("building", v)}
       >
         <SelectTrigger className="w-[150px]">
-          <SelectValue placeholder="Location" />
+          <SelectValue placeholder="Building" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={ALL_VALUE}>All Locations</SelectItem>
-          {locations.map((l) => (
-            <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+          <SelectItem value={ALL_VALUE}>All Buildings</SelectItem>
+          {buildings.map((b) => (
+            <SelectItem key={b.id} value={b.id}>{b.name}</SelectItem>
           ))}
         </SelectContent>
       </Select>
