@@ -72,6 +72,11 @@
   --radius-lg: calc(var(--radius) + 2px);
 }
 
+@keyframes scan-line {
+  0%, 100% { top: 10%; }
+  50% { top: 90%; }
+}
+
 * {
   border-color: hsl(var(--border));
 }

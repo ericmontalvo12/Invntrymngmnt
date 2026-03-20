@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Search, CheckCircle, AlertTriangle } from "lucide-react";
+import { Search, CheckCircle, AlertTriangle, Camera } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ import { createClient } from "@/lib/supabase/client";
 import { receiveStock, dispatchStock } from "@/lib/actions/inventory";
 import { toast } from "@/lib/hooks/useToast";
 import { useScanInput } from "@/lib/hooks/useScanInput";
+import { CameraScanner } from "@/components/scan/CameraScanner";
 import type { InventoryItem } from "@/types";
 
 interface UpcWorkflowProps {
@@ -27,6 +28,7 @@ export function UpcWorkflow({ mode }: UpcWorkflowProps) {
   const [qty, setQty] = useState(1);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showCamera, setShowCamera] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Focus the input on mount
@@ -95,8 +97,17 @@ export function UpcWorkflow({ mode }: UpcWorkflowProps) {
     resetForm();
   }
 
+  function handleCameraScan(value: string) {
+    setShowCamera(false);
+    setInput(value);
+    lookupItem(value);
+  }
+
   return (
     <div className="space-y-6">
+      {showCamera && (
+        <CameraScanner onScan={handleCameraScan} onClose={() => setShowCamera(false)} />
+      )}
       {/* Scan / Search Input */}
       <Card>
         <CardHeader>
@@ -126,9 +137,19 @@ export function UpcWorkflow({ mode }: UpcWorkflowProps) {
             <Button onClick={() => lookupItem(input)} disabled={searching}>
               {searching ? "Searching..." : "Look Up"}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={() => setShowCamera(true)}
+              aria-label="Scan with camera"
+              title="Scan with camera"
+            >
+              <Camera className="h-4 w-4" />
+            </Button>
           </div>
           <p className="mt-2 text-xs text-muted-foreground">
-            Plug in a USB barcode scanner and scan any item — it will auto-populate here.
+            Use the camera button on mobile, or plug in a USB barcode scanner.
           </p>
         </CardContent>
       </Card>
