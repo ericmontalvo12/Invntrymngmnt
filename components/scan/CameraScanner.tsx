@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import "barcode-detector/polyfill";
 
 interface CameraScannerProps {
   onScan: (value: string) => void;
@@ -18,13 +19,6 @@ export function CameraScanner({ onScan, onClose }: CameraScannerProps) {
 
   useEffect(() => {
     async function start() {
-      if (!("BarcodeDetector" in window)) {
-        setError(
-          "Camera scanning requires Chrome on Android or Safari on iOS 17+. Use the USB scanner or type the UPC manually."
-        );
-        return;
-      }
-
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: "environment" },
