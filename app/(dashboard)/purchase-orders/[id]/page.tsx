@@ -10,8 +10,9 @@ import type { PurchaseOrder, PurchaseOrderItem } from "@/types";
 export default async function PurchaseOrderDetailPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const {
@@ -31,12 +32,12 @@ export default async function PurchaseOrderDetailPage({
       .select(
         "*, vendor:suppliers(id, name, contact_name, email, phone, address, notes, created_at, updated_at), project:projects(id, name, description, created_at, updated_at), building:buildings(id, name, address, description, created_at, updated_at)"
       )
-      .eq("id", params.id)
+      .eq("id", id)
       .single(),
     supabase
       .from("purchase_order_items")
       .select("*")
-      .eq("purchase_order_id", params.id)
+      .eq("purchase_order_id", id)
       .order("created_at"),
   ]);
 

@@ -10,8 +10,9 @@ import type { PurchaseOrder, PurchaseOrderItem } from "@/types";
 export default async function EditPurchaseOrderPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = await params;
   const supabase = await createClient();
 
   const {
@@ -26,23 +27,23 @@ export default async function EditPurchaseOrderPage({
     .single();
 
   if (!profile || profile.role === "viewer")
-    redirect(`/purchase-orders/${params.id}`);
+    redirect(`/purchase-orders/${id}`);
 
   const [{ data: po }, { data: items }] = await Promise.all([
     supabase
       .from("purchase_orders")
       .select("*")
-      .eq("id", params.id)
+      .eq("id", id)
       .single(),
     supabase
       .from("purchase_order_items")
       .select("*")
-      .eq("purchase_order_id", params.id)
+      .eq("purchase_order_id", id)
       .order("created_at"),
   ]);
 
   if (!po) notFound();
-  if (po.status !== "draft") redirect(`/purchase-orders/${params.id}`);
+  if (po.status !== "draft") redirect(`/purchase-orders/${id}`);
 
   const [
     { data: vendors },
@@ -68,7 +69,7 @@ export default async function EditPurchaseOrderPage({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
-        <Link href={`/purchase-orders/${params.id}`}>
+        <Link href={`/purchase-orders/${id}`}>
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-1 h-4 w-4" />
             Back
