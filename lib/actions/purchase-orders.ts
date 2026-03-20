@@ -201,8 +201,24 @@ export async function completePurchaseOrder(id: string): Promise<ActionResult> {
 
   if (error) return { success: false, error: error.message };
 
+  // Update reorder_status on all linked inventory items
+  const { data: poItems } = await supabase
+    .from("purchase_order_items")
+    .select("item_id")
+    .eq("purchase_order_id", id)
+    .not("item_id", "is", null);
+
+  const itemIds = (poItems ?? []).map((i) => i.item_id).filter(Boolean) as string[];
+  if (itemIds.length > 0) {
+    await supabase
+      .from("inventory_items")
+      .update({ reorder_status: "ordered" })
+      .in("id", itemIds);
+  }
+
   revalidatePath("/purchase-orders");
   revalidatePath(`/purchase-orders/${id}`);
+  revalidatePath("/reorder");
   return { success: true, data: undefined };
 }
 
