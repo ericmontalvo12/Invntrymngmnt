@@ -5,4 +5,4 @@ alter table work_orders
 drop index if exists idx_work_orders_requested;
 
 alter table work_orders
-  alter column requested_by type text using null;
+  alter column requested_by type text using requested_by::text;
