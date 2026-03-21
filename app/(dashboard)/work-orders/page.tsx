@@ -64,7 +64,7 @@ export default function WorkOrdersPage() {
         supabase
           .from("work_orders")
           .select(
-            "*, building:buildings(id, name), inspection_type:inspection_types(id, name), requester:profiles!work_orders_requested_by_fkey(id, full_name, email), assignee:profiles!work_orders_assigned_to_fkey(id, full_name, email)"
+            "*, building:buildings(id, name), inspection_type:inspection_types(id, name)"
           )
           .order("created_at", { ascending: false }),
         supabase.auth.getUser(),
@@ -142,7 +142,6 @@ export default function WorkOrdersPage() {
                   <TableHead>Building / Unit</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Requested By</TableHead>
-                  <TableHead>Assigned To</TableHead>
                   <TableHead>Due Date</TableHead>
                   <TableHead>Priority</TableHead>
                   <TableHead>Status</TableHead>
@@ -165,10 +164,7 @@ export default function WorkOrdersPage() {
                       {wo.inspection_type?.name ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
-                      {wo.requester?.full_name ?? wo.requester?.email ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {wo.assignee?.full_name ?? wo.assignee?.email ?? "—"}
+                      {wo.requested_by ?? "—"}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {wo.extended_due_date
