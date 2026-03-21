@@ -15,7 +15,7 @@ export const workOrderSchema = z.object({
   building_id: z.string().uuid().optional().nullable(),
   apartment_unit: z.string().max(100).optional().nullable(),
   inspection_type_id: z.string().uuid().optional().nullable(),
-  requested_by: z.string().uuid({ message: "Requested by is required" }),
+  requested_by: z.string().min(1, "Requested by is required"),
   assigned_to: z.string().uuid().optional().nullable(),
   inspection_date: z.string().optional().nullable(),
   due_date: z.string().optional().nullable(),
