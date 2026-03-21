@@ -45,12 +45,10 @@ export default async function EditWorkOrderPage({
   const [
     { data: buildings },
     { data: inspectionTypes },
-    { data: profiles },
     { data: inventoryItems },
   ] = await Promise.all([
     supabase.from("buildings").select("id, name").order("name"),
     supabase.from("inspection_types").select("id, name").order("name"),
-    supabase.from("profiles").select("id, full_name, email").order("full_name"),
     supabase
       .from("inventory_items")
       .select("id, name, sku")
@@ -77,7 +75,6 @@ export default async function EditWorkOrderPage({
       <WorkOrderForm
         buildings={buildings ?? []}
         inspectionTypes={inspectionTypes ?? []}
-        profiles={profiles ?? []}
         inventoryItems={inventoryItems ?? []}
         defaultValues={fullWO}
         mode="edit"

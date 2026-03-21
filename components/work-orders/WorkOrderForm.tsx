@@ -28,7 +28,6 @@ import { createWorkOrder, updateWorkOrder } from "@/lib/actions/work-orders";
 import type {
   Building,
   InspectionType,
-  Profile,
   InventoryItem,
   WorkOrder,
   WorkOrderItem,
@@ -46,7 +45,6 @@ interface LineItemState {
 interface WorkOrderFormProps {
   buildings: Pick<Building, "id" | "name">[];
   inspectionTypes: Pick<InspectionType, "id" | "name">[];
-  profiles: Pick<Profile, "id" | "full_name" | "email">[];
   inventoryItems: Pick<InventoryItem, "id" | "name" | "sku">[];
   defaultValues?: WorkOrder & { items: WorkOrderItem[] };
   mode?: "create" | "edit";
@@ -55,7 +53,6 @@ interface WorkOrderFormProps {
 export function WorkOrderForm({
   buildings,
   inspectionTypes,
-  profiles,
   inventoryItems,
   defaultValues,
   mode = "create",
@@ -68,7 +65,6 @@ export function WorkOrderForm({
     apartment_unit: defaultValues?.apartment_unit ?? "",
     inspection_type_id: defaultValues?.inspection_type_id ?? "",
     requested_by: defaultValues?.requested_by ?? "",
-    assigned_to: defaultValues?.assigned_to ?? "",
     inspection_date: defaultValues?.inspection_date ?? "",
     due_date: defaultValues?.due_date ?? "",
     extended_due_date: defaultValues?.extended_due_date ?? "",
@@ -147,7 +143,7 @@ export function WorkOrderForm({
       apartment_unit: header.apartment_unit || null,
       inspection_type_id: header.inspection_type_id || null,
       requested_by: header.requested_by,
-      assigned_to: header.assigned_to || null,
+      assigned_to: null,
       inspection_date: header.inspection_date || null,
       due_date: header.due_date || null,
       extended_due_date: header.extended_due_date || null,
@@ -184,8 +180,6 @@ export function WorkOrderForm({
     });
   }
 
-  const profileLabel = (p: Pick<Profile, "id" | "full_name" | "email">) =>
-    p.full_name ?? p.email;
 
   return (
     <div className="space-y-6">
@@ -256,26 +250,6 @@ export function WorkOrderForm({
                 onChange={(e) => setHeaderField("apartment_unit", e.target.value)}
                 placeholder="e.g. Apt 4B"
               />
-            </div>
-
-            {/* Assigned To */}
-            <div className="space-y-2">
-              <Label>Assigned To</Label>
-              <Select
-                value={header.assigned_to}
-                onValueChange={(v) => setHeaderField("assigned_to", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select assignee..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {profiles.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {profileLabel(p)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             {/* Priority */}

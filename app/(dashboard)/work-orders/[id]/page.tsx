@@ -30,7 +30,7 @@ export default async function WorkOrderDetailPage({
     supabase
       .from("work_orders")
       .select(
-        "*, building:buildings(id, name, address, description, created_at, updated_at), inspection_type:inspection_types(id, name, created_at), assignee:profiles!work_orders_assigned_to_fkey(id, full_name, email), completer:profiles!work_orders_completed_by_fkey(id, full_name, email)"
+        "*, building:buildings(id, name, address, description, created_at, updated_at), inspection_type:inspection_types(id, name, created_at), completer:profiles!work_orders_completed_by_fkey(id, full_name, email)"
       )
       .eq("id", id)
       .single(),

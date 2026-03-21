@@ -215,10 +215,6 @@ export function WorkOrderDetailClient({
               <p className="font-medium">{wo.requested_by ?? "—"}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Assigned To</span>
-              <p className="font-medium">{profileName(wo.assignee)}</p>
-            </div>
-            <div>
               <span className="text-muted-foreground">Building</span>
               <p className="font-medium">{wo.building?.name ?? "—"}</p>
             </div>
