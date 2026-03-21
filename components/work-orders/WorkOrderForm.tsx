@@ -136,7 +136,7 @@ export function WorkOrderForm({
     if (!header.requested_by) {
       toast({
         title: "Error",
-        description: "Please select who requested this work order",
+        description: "Please enter who requested this work order",
         variant: "destructive",
       });
       return;
@@ -201,21 +201,11 @@ export function WorkOrderForm({
               <Label>
                 Requested By <span className="text-destructive">*</span>
               </Label>
-              <Select
+              <Input
                 value={header.requested_by}
-                onValueChange={(v) => setHeaderField("requested_by", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select person..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {profiles.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {profileLabel(p)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                onChange={(e) => setHeaderField("requested_by", e.target.value)}
+                placeholder="Name of requester"
+              />
             </div>
 
             {/* Inspection Type */}

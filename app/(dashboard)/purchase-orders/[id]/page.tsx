@@ -30,7 +30,7 @@ export default async function PurchaseOrderDetailPage({
     supabase
       .from("purchase_orders")
       .select(
-        "*, vendor:suppliers(id, name, contact_name, email, phone, address, notes, created_at, updated_at), project:projects(id, name, description, created_at, updated_at), building:buildings(id, name, address, description, created_at, updated_at)"
+        "*, vendor:suppliers(id, name, contact_name, email, phone, address, notes, created_at, updated_at), building:buildings(id, name, address, description, created_at, updated_at)"
       )
       .eq("id", id)
       .single(),

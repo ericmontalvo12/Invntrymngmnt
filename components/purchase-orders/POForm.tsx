@@ -25,7 +25,7 @@ import {
 } from "@/components/ui/table";
 import { toast } from "@/lib/hooks/useToast";
 import { createPurchaseOrder, updatePurchaseOrder } from "@/lib/actions/purchase-orders";
-import type { Supplier, Project, Building, InventoryItem, PurchaseOrder, PurchaseOrderItem } from "@/types";
+import type { Supplier, Building, InventoryItem, PurchaseOrder, PurchaseOrderItem } from "@/types";
 
 interface LineItemState {
   tempId: string;
@@ -39,7 +39,6 @@ interface LineItemState {
 
 interface POFormProps {
   vendors: Pick<Supplier, "id" | "name">[];
-  projects: Pick<Project, "id" | "name">[];
   buildings: Pick<Building, "id" | "name">[];
   inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "cost_per_unit">[];
   defaultValues?: PurchaseOrder & { items: PurchaseOrderItem[] };
@@ -48,7 +47,6 @@ interface POFormProps {
 
 export function POForm({
   vendors,
-  projects,
   buildings,
   inventoryItems,
   defaultValues,
@@ -59,7 +57,6 @@ export function POForm({
 
   const [header, setHeader] = useState({
     vendor_id: defaultValues?.vendor_id ?? "",
-    project_id: defaultValues?.project_id ?? "",
     building_id: defaultValues?.building_id ?? "",
     apartment_unit: defaultValues?.apartment_unit ?? "",
     expected_delivery: defaultValues?.expected_delivery ?? "",
@@ -152,7 +149,7 @@ export function POForm({
 
     const payload = {
       vendor_id: header.vendor_id || null,
-      project_id: header.project_id || null,
+      project_id: null,
       building_id: header.building_id || null,
       apartment_unit: header.apartment_unit || null,
       expected_delivery: header.expected_delivery || null,
@@ -211,25 +208,6 @@ export function POForm({
                   {vendors.map((v) => (
                     <SelectItem key={v.id} value={v.id}>
                       {v.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Bill To Project</Label>
-              <Select
-                value={header.project_id}
-                onValueChange={(v) => setHeaderField("project_id", v)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select project..." />
-                </SelectTrigger>
-                <SelectContent>
-                  {projects.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.name}
                     </SelectItem>
                   ))}
                 </SelectContent>

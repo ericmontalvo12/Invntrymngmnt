@@ -10,7 +10,6 @@ import {
   Truck,
   Tag,
   Building2,
-  FolderKanban,
   Users,
   Settings,
   QrCode,
@@ -35,7 +34,6 @@ const navItems = [
   { href: "/vendors", label: "Vendors", icon: Truck, roles: ["admin", "staff", "viewer"] },
   { href: "/categories", label: "Categories", icon: Tag, roles: ["admin", "staff", "viewer"] },
   { href: "/buildings", label: "Buildings", icon: Building2, roles: ["admin", "staff", "viewer"] },
-  { href: "/projects", label: "Projects", icon: FolderKanban, roles: ["admin", "staff", "viewer"] },
   { href: "/users", label: "Users", icon: Users, roles: ["admin"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ] as const;

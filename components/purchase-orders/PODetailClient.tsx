@@ -157,10 +157,6 @@ export function PODetailClient({ po, isAdmin, isStaff }: PODetailClientProps) {
               <p className="font-medium">{po.vendor?.name ?? "—"}</p>
             </div>
             <div>
-              <span className="text-muted-foreground">Bill To Project</span>
-              <p className="font-medium">{po.project?.name ?? "—"}</p>
-            </div>
-            <div>
               <span className="text-muted-foreground">Ship To Building</span>
               <p className="font-medium">{po.building?.name ?? "—"}</p>
             </div>

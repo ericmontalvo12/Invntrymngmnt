@@ -212,7 +212,7 @@ export function WorkOrderDetailClient({
           <div className="grid gap-4 sm:grid-cols-2 text-sm">
             <div>
               <span className="text-muted-foreground">Requested By</span>
-              <p className="font-medium">{profileName(wo.requester)}</p>
+              <p className="font-medium">{wo.requested_by ?? "—"}</p>
             </div>
             <div>
               <span className="text-muted-foreground">Assigned To</span>

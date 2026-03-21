@@ -21,12 +21,10 @@ export default async function NewPurchaseOrderPage() {
 
   const [
     { data: vendors },
-    { data: projects },
     { data: buildings },
     { data: items },
   ] = await Promise.all([
     supabase.from("suppliers").select("id, name").order("name"),
-    supabase.from("projects").select("id, name").order("name"),
     supabase.from("buildings").select("id, name").order("name"),
     supabase
       .from("inventory_items")
@@ -43,7 +41,6 @@ export default async function NewPurchaseOrderPage() {
       />
       <POForm
         vendors={vendors ?? []}
-        projects={projects ?? []}
         buildings={buildings ?? []}
         inventoryItems={items ?? []}
       />
