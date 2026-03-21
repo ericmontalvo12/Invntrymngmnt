@@ -22,6 +22,7 @@ import {
   completeWorkOrder,
   cancelWorkOrder,
   deleteWorkOrder,
+  dispatchWorkOrderInventory,
 } from "@/lib/actions/work-orders";
 import type { WorkOrder, WorkOrderItem, WorkOrderStatus, WorkOrderPriority } from "@/types";
 
@@ -97,6 +98,18 @@ export function WorkOrderDetailClient({
     });
   }
 
+  function handleDispatch() {
+    startTransition(async () => {
+      const result = await dispatchWorkOrderInventory(wo.id);
+      if (!result.success) {
+        toast({ title: "Error", description: result.error, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Inventory dispatched", description: "Stock levels have been updated." });
+      router.refresh();
+    });
+  }
+
   function handleDelete() {
     startTransition(async () => {
       const result = await deleteWorkOrder(wo.id);
@@ -111,6 +124,8 @@ export function WorkOrderDetailClient({
 
   const canEdit =
     (wo.status === "open" || wo.status === "in_progress") && canAct;
+  const canDispatch =
+    wo.status !== "cancelled" && !wo.dispatched_at && (wo.items?.length ?? 0) > 0 && canAct;
   const canStart = wo.status === "open" && canAct;
   const canComplete =
     (wo.status === "open" || wo.status === "in_progress") && canAct;
@@ -132,6 +147,24 @@ export function WorkOrderDetailClient({
               Edit
             </Button>
           </Link>
+        )}
+        {canDispatch && (
+          <ConfirmDialog
+            trigger={
+              <Button size="sm" variant="outline" disabled={isPending}>
+                Dispatch Inventory
+              </Button>
+            }
+            title="Dispatch inventory?"
+            description="This will deduct all items on this work order from stock. This cannot be undone."
+            confirmLabel="Dispatch"
+            onConfirm={handleDispatch}
+          />
+        )}
+        {wo.dispatched_at && (
+          <span className="text-xs text-muted-foreground">
+            Dispatched {new Date(wo.dispatched_at).toLocaleDateString()}
+          </span>
         )}
         {canStart && (
           <ConfirmDialog
@@ -248,6 +281,12 @@ export function WorkOrderDetailClient({
                 <p className="font-medium text-orange-600 dark:text-orange-400">
                   {new Date(wo.extended_due_date).toLocaleDateString()}
                 </p>
+              </div>
+            )}
+            {wo.dispatched_at && (
+              <div>
+                <span className="text-muted-foreground">Inventory Dispatched</span>
+                <p className="font-medium">{new Date(wo.dispatched_at).toLocaleDateString()}</p>
               </div>
             )}
             {wo.completed_at && (

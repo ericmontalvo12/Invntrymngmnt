@@ -193,6 +193,7 @@ export interface WorkOrder {
   priority: WorkOrderPriority;
   status: WorkOrderStatus;
   notes: string | null;
+  dispatched_at: string | null;
   completed_at: string | null;
   completed_by: string | null;
   created_by: string | null;

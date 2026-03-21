@@ -273,6 +273,62 @@ export async function cancelWorkOrder(id: string): Promise<ActionResult> {
   return { success: true, data: undefined };
 }
 
+export async function dispatchWorkOrderInventory(id: string): Promise<ActionResult> {
+  const auth = await requireAdminOrStaff();
+  if ("error" in auth) return { success: false, error: auth.error };
+
+  const supabase = await createServiceClient();
+
+  const { data: wo } = await supabase
+    .from("work_orders")
+    .select("status, dispatched_at")
+    .eq("id", id)
+    .single();
+
+  if (!wo) return { success: false, error: "Work order not found" };
+  if (wo.status === "cancelled") return { success: false, error: "Cannot dispatch a cancelled work order" };
+  if (wo.dispatched_at) return { success: false, error: "Inventory already dispatched for this work order" };
+
+  // Fetch line items that are linked to an inventory item
+  const { data: items } = await supabase
+    .from("work_order_items")
+    .select("item_id, quantity_needed")
+    .eq("work_order_id", id)
+    .not("item_id", "is", null);
+
+  if (items && items.length > 0) {
+    // Fetch current quantities for all linked items
+    const itemIds = items.map((i) => i.item_id as string);
+    const { data: inventoryItems } = await supabase
+      .from("inventory_items")
+      .select("id, quantity_on_hand")
+      .in("id", itemIds);
+
+    if (inventoryItems) {
+      const updates = inventoryItems.map((inv) => {
+        const needed = items.find((i) => i.item_id === inv.id)?.quantity_needed ?? 0;
+        return supabase
+          .from("inventory_items")
+          .update({ quantity_on_hand: Math.max(0, (inv.quantity_on_hand ?? 0) - needed) })
+          .eq("id", inv.id);
+      });
+      await Promise.all(updates);
+    }
+  }
+
+  const { error } = await supabase
+    .from("work_orders")
+    .update({ dispatched_at: new Date().toISOString() })
+    .eq("id", id);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/work-orders");
+  revalidatePath(`/work-orders/${id}`);
+  revalidatePath("/inventory");
+  return { success: true, data: undefined };
+}
+
 export async function deleteWorkOrder(id: string): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ("error" in auth) return { success: false, error: auth.error };
