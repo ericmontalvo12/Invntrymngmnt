@@ -281,7 +281,7 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
 
   const { data: wo } = await supabase
     .from("work_orders")
-    .select("status, dispatched_at")
+    .select("status, dispatched_at, wo_number")
     .eq("id", id)
     .single();
 
@@ -289,7 +289,7 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
   if (wo.status === "cancelled") return { success: false, error: "Cannot dispatch a cancelled work order" };
   if (wo.dispatched_at) return { success: false, error: "Inventory already dispatched for this work order" };
 
-  // Fetch line items that are linked to an inventory item
+  // Fetch line items linked to an inventory item
   const { data: items } = await supabase
     .from("work_order_items")
     .select("item_id, quantity_needed")
@@ -297,22 +297,45 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
     .not("item_id", "is", null);
 
   if (items && items.length > 0) {
-    // Fetch current quantities for all linked items
     const itemIds = items.map((i) => i.item_id as string);
+
     const { data: inventoryItems } = await supabase
       .from("inventory_items")
-      .select("id, quantity_on_hand")
+      .select("id, quantity_on_hand, minimum_threshold")
       .in("id", itemIds);
 
     if (inventoryItems) {
-      const updates = inventoryItems.map((inv) => {
+      for (const inv of inventoryItems) {
         const needed = items.find((i) => i.item_id === inv.id)?.quantity_needed ?? 0;
-        return supabase
+        const quantityBefore = inv.quantity_on_hand ?? 0;
+        const quantityAfter = Math.max(0, quantityBefore - needed);
+        const reorderUpdate =
+          quantityAfter <= (inv.minimum_threshold ?? 0)
+            ? { reorder_status: "needs_reorder" }
+            : {};
+
+        const { error: updateError } = await supabase
           .from("inventory_items")
-          .update({ quantity_on_hand: Math.max(0, (inv.quantity_on_hand ?? 0) - needed) })
+          .update({ quantity_on_hand: quantityAfter, ...reorderUpdate })
           .eq("id", inv.id);
-      });
-      await Promise.all(updates);
+
+        if (updateError) return { success: false, error: updateError.message };
+
+        const { error: txError } = await supabase
+          .from("inventory_transactions")
+          .insert({
+            item_id: inv.id,
+            user_id: auth.userId,
+            transaction_type: "stock_out",
+            quantity_change: -needed,
+            quantity_before: quantityBefore,
+            quantity_after: quantityAfter,
+            reason: "Work order dispatch",
+            note: `WO# ${wo.wo_number}`,
+          });
+
+        if (txError) return { success: false, error: txError.message };
+      }
     }
   }
 
@@ -326,6 +349,8 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
   revalidatePath("/work-orders");
   revalidatePath(`/work-orders/${id}`);
   revalidatePath("/inventory");
+  revalidatePath("/transactions");
+  revalidatePath("/dashboard");
   return { success: true, data: undefined };
 }
 
