@@ -17,6 +17,7 @@ import {
   PackageCheck,
   PackageMinus,
   ShoppingCart,
+  ClipboardList,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/inventory", label: "Inventory", icon: Package, roles: ["admin", "staff", "viewer"] },
   { href: "/reorder", label: "Reorder List", icon: RefreshCw, roles: ["admin", "staff", "viewer"] },
   { href: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart, roles: ["admin", "staff"] },
+  { href: "/work-orders", label: "Work Orders", icon: ClipboardList, roles: ["admin", "staff", "viewer"] },
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight, roles: ["admin", "staff", "viewer"] },
   { href: "/receiving", label: "Receiving", icon: PackageCheck, roles: ["admin", "staff"] },
   { href: "/dispatch", label: "Dispatch", icon: PackageMinus, roles: ["admin", "staff"] },

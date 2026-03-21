@@ -156,3 +156,53 @@ export interface PurchaseOrder {
 export type ActionResult<T = void> =
   | { success: true; data: T }
   | { success: false; error: string };
+
+export type WorkOrderStatus = "open" | "in_progress" | "completed" | "cancelled";
+export type WorkOrderPriority = "low" | "medium" | "high" | "urgent";
+
+export interface InspectionType {
+  id: string;
+  name: string;
+  created_at: string;
+}
+
+export interface WorkOrderItem {
+  id: string;
+  work_order_id: string;
+  item_id: string | null;
+  item_name: string;
+  item_sku: string;
+  quantity_needed: number;
+  quantity_used: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WorkOrder {
+  id: string;
+  wo_number: string;
+  building_id: string | null;
+  apartment_unit: string | null;
+  inspection_type_id: string | null;
+  requested_by: string | null;
+  assigned_to: string | null;
+  inspection_date: string | null;
+  due_date: string | null;
+  extended_due_date: string | null;
+  priority: WorkOrderPriority;
+  status: WorkOrderStatus;
+  notes: string | null;
+  completed_at: string | null;
+  completed_by: string | null;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+  // Joined fields
+  building?: Building | null;
+  inspection_type?: InspectionType | null;
+  requester?: Pick<Profile, "id" | "full_name" | "email"> | null;
+  assignee?: Pick<Profile, "id" | "full_name" | "email"> | null;
+  completer?: Pick<Profile, "id" | "full_name" | "email"> | null;
+  items?: WorkOrderItem[];
+}
