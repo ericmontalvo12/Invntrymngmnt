@@ -115,7 +115,7 @@ export default async function DashboardPage() {
                     <span
                       className={
                         tx.quantity_change > 0
-                          ? "shrink-0 font-medium text-emerald-600"
+                          ? "shrink-0 font-medium text-emerald-700"
                           : "shrink-0 font-medium text-red-600"
                       }
                     >

@@ -79,7 +79,7 @@ export default async function TransactionsPage() {
                     </TableCell>
                     <TableCell
                       className={`text-right font-medium ${
-                        tx.quantity_change > 0 ? "text-emerald-600" : "text-red-600"
+                        tx.quantity_change > 0 ? "text-emerald-700" : "text-red-700"
                       }`}
                     >
                       {tx.quantity_change > 0 ? "+" : ""}
