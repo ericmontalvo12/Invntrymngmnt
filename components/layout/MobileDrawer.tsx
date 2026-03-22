@@ -23,17 +23,23 @@ import {
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/types";
 
+const featureFlags = {
+  purchaseOrders: false,
+  workOrders: false,
+  vendors: false,
+};
+
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, roles: ["admin", "staff", "viewer"] },
   { href: "/inventory", label: "Inventory", icon: Package, roles: ["admin", "staff", "viewer"] },
   { href: "/reorder", label: "Reorder List", icon: RefreshCw, roles: ["admin", "staff", "viewer"] },
-  { href: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart, roles: ["admin", "staff"] },
-  { href: "/work-orders", label: "Work Orders", icon: ClipboardList, roles: ["admin", "staff", "viewer"] },
+  ...(featureFlags.purchaseOrders ? [{ href: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart, roles: ["admin", "staff"] }] : []),
+  ...(featureFlags.workOrders ? [{ href: "/work-orders", label: "Work Orders", icon: ClipboardList, roles: ["admin", "staff", "viewer"] }] : []),
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight, roles: ["admin", "staff", "viewer"] },
   { href: "/receiving", label: "Receiving", icon: PackageCheck, roles: ["admin", "staff"] },
   { href: "/dispatch", label: "Dispatch", icon: PackageMinus, roles: ["admin", "staff"] },
   { href: "/scan", label: "Scan Mode", icon: QrCode, roles: ["admin", "staff"] },
-  { href: "/vendors", label: "Vendors", icon: Truck, roles: ["admin", "staff", "viewer"] },
+  ...(featureFlags.vendors ? [{ href: "/vendors", label: "Vendors", icon: Truck, roles: ["admin", "staff", "viewer"] }] : []),
   { href: "/categories", label: "Categories", icon: Tag, roles: ["admin", "staff", "viewer"] },
   { href: "/buildings", label: "Buildings", icon: Building2, roles: ["admin", "staff", "viewer"] },
   { href: "/projects", label: "Projects", icon: FolderKanban, roles: ["admin", "staff", "viewer"] },
