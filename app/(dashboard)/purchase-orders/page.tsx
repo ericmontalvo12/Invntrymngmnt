@@ -39,7 +39,7 @@ const STATUS_CLASSES: Record<POStatus, string> = {
   ordered: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
   partially_received: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
   received: "bg-emerald-600 text-white dark:bg-emerald-900/30 dark:text-emerald-400",
-  voided: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
+  voided: "bg-red-600 text-white dark:bg-red-900/30 dark:text-red-400",
 };
 
 export default function PurchaseOrdersPage() {
