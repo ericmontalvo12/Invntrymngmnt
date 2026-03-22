@@ -204,13 +204,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
                     <TableCell>
                       <TransactionTypeBadge type={tx.transaction_type} />
                     </TableCell>
-                    <TableCell
-                      className={`text-right font-medium ${
-                        tx.quantity_change > 0 ? "text-emerald-700" : "text-red-700"
-                      }`}
-                    >
-                      {tx.quantity_change > 0 ? "+" : ""}
-                      {tx.quantity_change}
+                    <TableCell className="text-right">
+                      <span className={tx.quantity_change > 0 ? "rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white" : "rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white"}>
+                        {tx.quantity_change > 0 ? "+" : ""}{tx.quantity_change}
+                      </span>
                     </TableCell>
                     <TableCell className="text-right text-muted-foreground">
                       {tx.quantity_before}
