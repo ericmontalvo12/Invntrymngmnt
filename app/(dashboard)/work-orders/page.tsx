@@ -133,75 +133,119 @@ export default function WorkOrdersPage() {
           }
         />
       ) : (
-        <Card>
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>WO #</TableHead>
-                  <TableHead>Building / Unit</TableHead>
-                  <TableHead>Type</TableHead>
-                  <TableHead>Requested By</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead>Priority</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="w-[60px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filtered.map((wo) => (
-                  <TableRow key={wo.id}>
-                    <TableCell className="font-mono font-medium">
-                      {wo.wo_number}
-                    </TableCell>
-                    <TableCell>
-                      <span>{wo.building?.name ?? "—"}</span>
+        <>
+          {/* Mobile card list */}
+          <div className="flex flex-col gap-3 md:hidden">
+            {filtered.map((wo) => (
+              <Link key={wo.id} href={`/work-orders/${wo.id}`}>
+                <Card className="hover:bg-muted/50 transition-colors">
+                  <CardContent className="p-4 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono font-semibold text-sm">{wo.wo_number}</span>
+                      <div className="flex items-center gap-1.5">
+                        <Badge className={PRIORITY_CLASSES[wo.priority]} variant="secondary">
+                          {wo.priority.charAt(0).toUpperCase() + wo.priority.slice(1)}
+                        </Badge>
+                        <Badge className={STATUS_CLASSES[wo.status]} variant="secondary">
+                          {STATUS_LABELS[wo.status]}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div className="text-sm font-medium">
+                      {wo.building?.name ?? "—"}
                       {wo.apartment_unit && (
-                        <span className="text-muted-foreground"> · {wo.apartment_unit}</span>
+                        <span className="text-muted-foreground font-normal"> · {wo.apartment_unit}</span>
                       )}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {wo.inspection_type?.name ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {wo.requested_by ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {wo.extended_due_date
-                        ? <span title="Extended">{new Date(wo.extended_due_date).toLocaleDateString()} <span className="text-xs text-orange-500">(ext)</span></span>
-                        : wo.due_date
-                        ? new Date(wo.due_date).toLocaleDateString()
-                        : "—"}
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={PRIORITY_CLASSES[wo.priority]}
-                        variant="secondary"
-                      >
-                        {wo.priority.charAt(0).toUpperCase() + wo.priority.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        className={STATUS_CLASSES[wo.status]}
-                        variant="secondary"
-                      >
-                        {STATUS_LABELS[wo.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Link href={`/work-orders/${wo.id}`}>
-                        <Button variant="ghost" size="icon" className="h-8 w-8">
-                          <Eye className="h-3.5 w-3.5" />
-                        </Button>
-                      </Link>
-                    </TableCell>
+                    </div>
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      {wo.inspection_type?.name && <span>{wo.inspection_type.name}</span>}
+                      {wo.requested_by && <span>Req: {wo.requested_by}</span>}
+                      {(wo.extended_due_date || wo.due_date) && (
+                        <span>
+                          Due:{" "}
+                          {wo.extended_due_date
+                            ? `${new Date(wo.extended_due_date).toLocaleDateString()} (ext)`
+                            : new Date(wo.due_date!).toLocaleDateString()}
+                        </span>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
+
+          {/* Desktop table */}
+          <Card className="hidden md:block">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>WO #</TableHead>
+                    <TableHead>Building / Unit</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Requested By</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead>Priority</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="w-[60px]" />
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                </TableHeader>
+                <TableBody>
+                  {filtered.map((wo) => (
+                    <TableRow key={wo.id}>
+                      <TableCell className="font-mono font-medium">
+                        {wo.wo_number}
+                      </TableCell>
+                      <TableCell>
+                        <span>{wo.building?.name ?? "—"}</span>
+                        {wo.apartment_unit && (
+                          <span className="text-muted-foreground"> · {wo.apartment_unit}</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {wo.inspection_type?.name ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {wo.requested_by ?? "—"}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {wo.extended_due_date
+                          ? <span title="Extended">{new Date(wo.extended_due_date).toLocaleDateString()} <span className="text-xs text-orange-500">(ext)</span></span>
+                          : wo.due_date
+                          ? new Date(wo.due_date).toLocaleDateString()
+                          : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={PRIORITY_CLASSES[wo.priority]}
+                          variant="secondary"
+                        >
+                          {wo.priority.charAt(0).toUpperCase() + wo.priority.slice(1)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={STATUS_CLASSES[wo.status]}
+                          variant="secondary"
+                        >
+                          {STATUS_LABELS[wo.status]}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/work-orders/${wo.id}`}>
+                          <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Eye className="h-3.5 w-3.5" />
+                          </Button>
+                        </Link>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </>
       )}
     </div>
   );
