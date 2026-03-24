@@ -43,6 +43,16 @@ export default async function PurchaseOrderDetailPage({
 
   if (!po) notFound();
 
+  let orderedByName = "—";
+  if (po.created_by) {
+    const { data: creator } = await supabase
+      .from("profiles")
+      .select("full_name, email")
+      .eq("id", po.created_by)
+      .single();
+    orderedByName = creator?.full_name || creator?.email || "—";
+  }
+
   const fullPO = {
     ...po,
     items: (items ?? []) as PurchaseOrderItem[],
@@ -65,7 +75,7 @@ export default async function PurchaseOrderDetailPage({
           description={`Created ${new Date(po.created_at).toLocaleDateString()}`}
         />
       </div>
-      <PODetailClient po={fullPO} isAdmin={isAdmin} isStaff={isStaff} />
+      <PODetailClient po={fullPO} isAdmin={isAdmin} isStaff={isStaff} orderedByName={orderedByName} />
     </div>
   );
 }

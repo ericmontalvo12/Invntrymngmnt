@@ -18,6 +18,7 @@ import {
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { ReceivePOModal } from "@/components/purchase-orders/ReceivePOModal";
 import { toast } from "@/lib/hooks/useToast";
+import { printPurchaseOrder } from "@/lib/po-print";
 import {
   completePurchaseOrder,
   voidPurchaseOrder,
@@ -47,9 +48,10 @@ interface PODetailClientProps {
   po: PurchaseOrder & { items: PurchaseOrderItem[] };
   isAdmin: boolean;
   isStaff: boolean;
+  orderedByName: string;
 }
 
-export function PODetailClient({ po, isAdmin, isStaff }: PODetailClientProps) {
+export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetailClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const canAct = isAdmin || isStaff;
@@ -133,7 +135,7 @@ export function PODetailClient({ po, isAdmin, isStaff }: PODetailClientProps) {
         <Button
           variant="outline"
           size="sm"
-          onClick={() => window.print()}
+          onClick={() => printPurchaseOrder({ po, orderedByName })}
         >
           <Printer className="mr-1 h-3.5 w-3.5" />
           Print PO
