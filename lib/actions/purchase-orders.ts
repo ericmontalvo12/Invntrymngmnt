@@ -222,6 +222,34 @@ export async function completePurchaseOrder(id: string): Promise<ActionResult> {
   return { success: true, data: undefined };
 }
 
+export async function confirmPurchaseOrder(id: string): Promise<ActionResult> {
+  const auth = await requireAdminOrStaff();
+  if ("error" in auth) return { success: false, error: auth.error };
+
+  const supabase = await createServiceClient();
+
+  const { data: po } = await supabase
+    .from("purchase_orders")
+    .select("status")
+    .eq("id", id)
+    .single();
+
+  if (!po) return { success: false, error: "PO not found" };
+  if (po.status !== "ordered")
+    return { success: false, error: "Only open POs can be marked as ordered" };
+
+  const { error } = await supabase
+    .from("purchase_orders")
+    .update({ status: "confirmed" })
+    .eq("id", id);
+
+  if (error) return { success: false, error: error.message };
+
+  revalidatePath("/purchase-orders");
+  revalidatePath(`/purchase-orders/${id}`);
+  return { success: true, data: undefined };
+}
+
 export async function voidPurchaseOrder(id: string): Promise<ActionResult> {
   const auth = await requireAdmin();
   if ("error" in auth) return { success: false, error: auth.error };
@@ -266,7 +294,7 @@ export async function receivePurchaseOrderItems(
     .single();
 
   if (poError || !po) return { success: false, error: "PO not found" };
-  if (po.status === "received" || po.status === "voided")
+  if (po.status === "draft" || po.status === "received" || po.status === "voided")
     return { success: false, error: "Cannot receive items on this PO" };
 
   for (const received of receivedItems) {

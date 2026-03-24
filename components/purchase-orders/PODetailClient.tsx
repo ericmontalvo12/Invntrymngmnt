@@ -21,6 +21,7 @@ import { toast } from "@/lib/hooks/useToast";
 import { printPurchaseOrder } from "@/lib/po-print";
 import {
   completePurchaseOrder,
+  confirmPurchaseOrder,
   voidPurchaseOrder,
 } from "@/lib/actions/purchase-orders";
 import type { PurchaseOrder, PurchaseOrderItem, POStatus } from "@/types";
@@ -32,6 +33,7 @@ function POStatusBadge({ status }: { status: POStatus }) {
   > = {
     draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
     ordered: { label: "Open", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+    confirmed: { label: "Ordered", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
     partially_received: { label: "Partial", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
     received: { label: "Received", className: "bg-emerald-600 text-white dark:bg-emerald-900/30 dark:text-emerald-400" },
     voided: { label: "Voided", className: "bg-red-600 text-white dark:bg-red-900/30 dark:text-red-400" },
@@ -86,8 +88,9 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
 
   const canEdit = po.status === "draft" && canAct;
   const canComplete = po.status === "draft" && canAct;
+  const canConfirm = po.status === "ordered" && canAct;
   const canReceive =
-    (po.status === "ordered" || po.status === "partially_received") && canAct;
+    (po.status === "confirmed" || po.status === "partially_received") && canAct;
   const canVoid =
     po.status !== "received" && po.status !== "voided" && isAdmin;
 
@@ -114,6 +117,29 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
             description="This will mark the PO as ordered and send it to the vendor. You can still receive items afterward."
             confirmLabel="Complete PO"
             onConfirm={handleComplete}
+          />
+        )}
+        {canConfirm && (
+          <ConfirmDialog
+            trigger={
+              <Button size="sm" disabled={isPending}>
+                Mark as Ordered
+              </Button>
+            }
+            title="Mark PO as Ordered?"
+            description="This confirms the order has been placed with the vendor."
+            confirmLabel="Mark as Ordered"
+            onConfirm={() => {
+              startTransition(async () => {
+                const result = await confirmPurchaseOrder(po.id);
+                if (!result.success) {
+                  toast({ title: "Error", description: result.error, variant: "destructive" });
+                  return;
+                }
+                toast({ title: "PO marked as ordered" });
+                router.refresh();
+              });
+            }}
           />
         )}
         {canReceive && (

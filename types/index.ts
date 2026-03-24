@@ -10,6 +10,7 @@ export type ReorderStatus = "needs_reorder" | "ordered" | "received";
 export type POStatus =
   | "draft"
   | "ordered"
+  | "confirmed"
   | "partially_received"
   | "received"
   | "voided";
