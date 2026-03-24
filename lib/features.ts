@@ -3,9 +3,9 @@
  * Changes here automatically affect navigation visibility and route access.
  */
 const features = {
-  purchaseOrders: false,
-  workOrders: false,
-  vendors: false,
+  purchaseOrders: true,
+  workOrders: true,
+  vendors: true,
 } as const;
 
 export default features;
