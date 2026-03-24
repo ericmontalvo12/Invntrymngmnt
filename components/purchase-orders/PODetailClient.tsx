@@ -31,7 +31,7 @@ function POStatusBadge({ status }: { status: POStatus }) {
     { label: string; className: string }
   > = {
     draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
-    ordered: { label: "Ordered", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+    ordered: { label: "Open", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
     partially_received: { label: "Partial", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
     received: { label: "Received", className: "bg-emerald-600 text-white dark:bg-emerald-900/30 dark:text-emerald-400" },
     voided: { label: "Voided", className: "bg-red-600 text-white dark:bg-red-900/30 dark:text-red-400" },

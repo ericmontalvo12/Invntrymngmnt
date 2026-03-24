@@ -28,7 +28,7 @@ import type { PurchaseOrder, POStatus } from "@/types";
 
 const STATUS_LABELS: Record<POStatus, string> = {
   draft: "Draft",
-  ordered: "Ordered",
+  ordered: "Open",
   partially_received: "Partially Received",
   received: "Received",
   voided: "Voided",
