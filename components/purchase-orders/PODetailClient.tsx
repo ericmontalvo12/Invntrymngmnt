@@ -135,7 +135,22 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
         <Button
           variant="outline"
           size="sm"
-          onClick={() => printPurchaseOrder({ po, orderedByName })}
+          disabled={isPending}
+          onClick={() => {
+            if (po.status === "draft") {
+              startTransition(async () => {
+                const result = await completePurchaseOrder(po.id);
+                if (!result.success) {
+                  toast({ title: "Error", description: result.error, variant: "destructive" });
+                  return;
+                }
+                router.refresh();
+                printPurchaseOrder({ po, orderedByName });
+              });
+            } else {
+              printPurchaseOrder({ po, orderedByName });
+            }
+          }}
         >
           <Printer className="mr-1 h-3.5 w-3.5" />
           Print PO
