@@ -115,8 +115,8 @@ export default async function DashboardPage() {
                     <span
                       className={
                         tx.quantity_change > 0
-                          ? "shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white"
-                          : "shrink-0 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white"
+                          ? "shrink-0 rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-semibold text-white dark:bg-emerald-900/30 dark:text-emerald-400"
+                          : "shrink-0 rounded-full bg-red-600 px-2 py-0.5 text-xs font-semibold text-white dark:bg-red-900/30 dark:text-red-400"
                       }
                     >
                       {tx.quantity_change > 0 ? "+" : ""}{tx.quantity_change}
