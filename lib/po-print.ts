@@ -6,7 +6,10 @@ interface POPrintData {
 }
 
 function formatDate(dateStr: string): string {
-  const d = dateStr.includes("T") ? new Date(dateStr) : new Date(dateStr + "T00:00:00");
+  // Date-only strings ("2026-03-05") need a time appended to avoid UTC-offset day shifts.
+  // Full timestamps from Supabase ("2026-03-25 15:30:00+00" or ISO) are passed directly.
+  const d = dateStr.length <= 10 ? new Date(dateStr + "T00:00:00") : new Date(dateStr);
+  if (isNaN(d.getTime())) return "—";
   const month = d.toLocaleDateString("en-US", { month: "long" });
   const day = d.getDate();
   const year = d.getFullYear();
