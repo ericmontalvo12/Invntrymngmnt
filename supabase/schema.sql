@@ -76,7 +76,6 @@ create table inventory_items (
   upc                text unique,
   category_id        uuid references categories(id) on delete set null,
   location_id        uuid references locations(id) on delete set null,
-  building_id        uuid references buildings(id) on delete set null,
   supplier_id        uuid references suppliers(id) on delete set null,
   quantity_on_hand   integer not null default 0 check (quantity_on_hand >= 0),
   minimum_threshold  integer not null default 0,
@@ -115,7 +114,6 @@ create index idx_inventory_items_upc        on inventory_items(upc);
 create index idx_inventory_items_status     on inventory_items(status);
 create index idx_inventory_items_category   on inventory_items(category_id);
 create index idx_inventory_items_location   on inventory_items(location_id);
-create index idx_inventory_items_building   on inventory_items(building_id);
 create index idx_inventory_items_supplier   on inventory_items(supplier_id);
 create index idx_inventory_items_reorder    on inventory_items(reorder_status);
 create index idx_transactions_item_id       on inventory_transactions(item_id);
