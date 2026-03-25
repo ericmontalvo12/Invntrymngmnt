@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,9 +40,105 @@ interface LineItemState {
 interface POFormProps {
   vendors: Pick<Supplier, "id" | "name">[];
   buildings: Pick<Building, "id" | "name">[];
-  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "cost_per_unit">[];
+  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
   defaultValues?: PurchaseOrder & { items: PurchaseOrderItem[] };
   mode?: "create" | "edit";
+}
+
+// Inline search dropdown for SKU / UPC lookup
+function ItemSearchInput({
+  inventoryItems,
+  selectedId,
+  selectedSku,
+  onSelect,
+  onClear,
+}: {
+  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
+  selectedId: string;
+  selectedSku: string;
+  onSelect: (item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">) => void;
+  onClear: () => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  const results = query.length > 0
+    ? inventoryItems.filter((i) => {
+        const q = query.toLowerCase();
+        return (
+          i.sku.toLowerCase().includes(q) ||
+          (i.upc?.toLowerCase().includes(q) ?? false)
+        );
+      }).slice(0, 10)
+    : [];
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  if (selectedId) {
+    return (
+      <div className="flex items-center gap-1 rounded-md border bg-muted px-2 h-8 text-xs min-w-0">
+        <span className="truncate font-mono flex-1">{selectedSku}</span>
+        <button
+          type="button"
+          onClick={onClear}
+          className="shrink-0 text-muted-foreground hover:text-foreground"
+        >
+          <X className="h-3 w-3" />
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <div className="relative">
+        <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
+        <Input
+          value={query}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onFocus={() => setOpen(true)}
+          placeholder="SKU or UPC..."
+          className="h-8 pl-6 text-xs"
+        />
+      </div>
+      {open && results.length > 0 && (
+        <div className="absolute z-50 mt-1 w-64 rounded-md border bg-popover shadow-md">
+          {results.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className="w-full px-3 py-2 text-left text-xs hover:bg-accent"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(item);
+                setQuery("");
+                setOpen(false);
+              }}
+            >
+              <span className="font-mono font-medium">{item.sku}</span>
+              {item.upc && (
+                <span className="ml-2 text-muted-foreground">UPC: {item.upc}</span>
+              )}
+              <div className="text-muted-foreground truncate">{item.name}</div>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function POForm({
@@ -108,23 +204,33 @@ export function POForm({
     );
   }
 
-  function handleItemSelect(tempId: string, itemId: string) {
-    const found = inventoryItems.find((i) => i.id === itemId);
-    if (found) {
-      setLineItems((prev) =>
-        prev.map((i) =>
-          i.tempId === tempId
-            ? {
-                ...i,
-                item_id: found.id,
-                item_name: found.name,
-                item_sku: found.sku,
-                unit_cost: found.cost_per_unit?.toString() ?? "",
-              }
-            : i
-        )
-      );
-    }
+  function handleItemSelect(
+    tempId: string,
+    item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">
+  ) {
+    setLineItems((prev) =>
+      prev.map((i) =>
+        i.tempId === tempId
+          ? {
+              ...i,
+              item_id: item.id,
+              item_name: item.name,
+              item_sku: item.sku,
+              unit_cost: item.cost_per_unit?.toString() ?? "",
+            }
+          : i
+      )
+    );
+  }
+
+  function handleItemClear(tempId: string) {
+    setLineItems((prev) =>
+      prev.map((i) =>
+        i.tempId === tempId
+          ? { ...i, item_id: "", item_name: "", item_sku: "" }
+          : i
+      )
+    );
   }
 
   const lineTotal = (qty: number, cost: string) => {
@@ -283,7 +389,7 @@ export function POForm({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[160px]">Item #</TableHead>
+                    <TableHead className="w-[160px]">SKU / UPC</TableHead>
                     <TableHead>Item Name</TableHead>
                     <TableHead className="w-[80px]">Qty</TableHead>
                     <TableHead className="w-[110px]">Cost</TableHead>
@@ -295,52 +401,23 @@ export function POForm({
                   {lineItems.map((item) => (
                     <TableRow key={item.tempId}>
                       <TableCell className="py-2">
-                        <Input
-                          list={`sku-list-${item.tempId}`}
-                          value={item.item_sku}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const found = inventoryItems.find(
-                              (i) => i.sku === val
-                            );
-                            if (found) {
-                              handleItemSelect(item.tempId, found.id);
-                            } else {
-                              updateLineItemField(item.tempId, "item_sku", val);
-                            }
-                          }}
-                          placeholder="SKU"
-                          className="h-8 text-xs"
+                        <ItemSearchInput
+                          inventoryItems={inventoryItems}
+                          selectedId={item.item_id}
+                          selectedSku={item.item_sku}
+                          onSelect={(found) => handleItemSelect(item.tempId, found)}
+                          onClear={() => handleItemClear(item.tempId)}
                         />
-                        <datalist id={`sku-list-${item.tempId}`}>
-                          {inventoryItems.map((i) => (
-                            <option key={i.id} value={i.sku} />
-                          ))}
-                        </datalist>
                       </TableCell>
                       <TableCell className="py-2">
                         <Input
-                          list={`name-list-${item.tempId}`}
                           value={item.item_name}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const found = inventoryItems.find(
-                              (i) => i.name === val
-                            );
-                            if (found) {
-                              handleItemSelect(item.tempId, found.id);
-                            } else {
-                              updateLineItemField(item.tempId, "item_name", val);
-                            }
-                          }}
+                          onChange={(e) =>
+                            updateLineItemField(item.tempId, "item_name", e.target.value)
+                          }
                           placeholder="Item name"
                           className="h-8 text-xs"
                         />
-                        <datalist id={`name-list-${item.tempId}`}>
-                          {inventoryItems.map((i) => (
-                            <option key={i.id} value={i.name} />
-                          ))}
-                        </datalist>
                       </TableCell>
                       <TableCell className="py-2">
                         <Input
@@ -364,11 +441,7 @@ export function POForm({
                           step="0.01"
                           value={item.unit_cost}
                           onChange={(e) =>
-                            updateLineItemField(
-                              item.tempId,
-                              "unit_cost",
-                              e.target.value
-                            )
+                            updateLineItemField(item.tempId, "unit_cost", e.target.value)
                           }
                           placeholder="0.00"
                           className="h-8 w-24 text-xs"
@@ -378,11 +451,7 @@ export function POForm({
                         <Input
                           value={item.notes}
                           onChange={(e) =>
-                            updateLineItemField(
-                              item.tempId,
-                              "notes",
-                              e.target.value
-                            )
+                            updateLineItemField(item.tempId, "notes", e.target.value)
                           }
                           placeholder="Optional note"
                           className="h-8 text-xs"

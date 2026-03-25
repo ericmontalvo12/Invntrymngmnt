@@ -28,7 +28,7 @@ export default async function NewPurchaseOrderPage() {
     supabase.from("buildings").select("id, name").order("name"),
     supabase
       .from("inventory_items")
-      .select("id, name, sku, cost_per_unit")
+      .select("id, name, sku, upc, cost_per_unit")
       .eq("status", "active")
       .order("name"),
   ]);
