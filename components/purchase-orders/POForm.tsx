@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,11 +37,17 @@ function UPCSearch({
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        // check if click is inside the portal dropdown
+        const portal = document.getElementById("upc-dropdown-portal");
+        if (portal && portal.contains(e.target as Node)) return;
+        setOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
@@ -52,35 +59,57 @@ function UPCSearch({
         .slice(0, 8)
     : [];
 
+  function openDropdown() {
+    if (inputRef.current) setRect(inputRef.current.getBoundingClientRect());
+    setOpen(true);
+  }
+
+  const dropdown =
+    open && results.length > 0 && rect
+      ? createPortal(
+          <ul
+            id="upc-dropdown-portal"
+            style={{
+              position: "fixed",
+              top: rect.bottom + 4,
+              left: rect.left,
+              minWidth: rect.width,
+              zIndex: 9999,
+            }}
+            className="max-h-48 w-max overflow-auto rounded-md border border-border bg-popover py-1 shadow-md"
+          >
+            {results.map((item) => (
+              <li
+                key={item.id}
+                className="cursor-pointer px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+                onMouseDown={(e) => {
+                  e.preventDefault();
+                  onSelect(item);
+                  setQuery("");
+                  setOpen(false);
+                }}
+              >
+                <span className="font-mono">{item.upc}</span>
+                <span className="ml-2 text-muted-foreground">{item.name}</span>
+              </li>
+            ))}
+          </ul>,
+          document.body
+        )
+      : null;
+
   return (
-    <div ref={ref} className="relative mt-1">
+    <div className="mt-1">
       <Input
+        ref={inputRef}
         value={query}
-        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-        onFocus={() => query.trim() && setOpen(true)}
+        onChange={(e) => { setQuery(e.target.value); openDropdown(); }}
+        onFocus={openDropdown}
         placeholder="Search UPC…"
         className="h-7 text-xs"
         autoComplete="off"
       />
-      {open && results.length > 0 && (
-        <ul className="absolute z-50 mt-1 max-h-48 w-max min-w-full overflow-auto rounded-md border border-border bg-popover py-1 shadow-md">
-          {results.map((item) => (
-            <li
-              key={item.id}
-              className="cursor-pointer px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
-              onMouseDown={(e) => {
-                e.preventDefault();
-                onSelect(item);
-                setQuery("");
-                setOpen(false);
-              }}
-            >
-              <span className="font-mono">{item.upc}</span>
-              <span className="ml-2 text-muted-foreground">{item.name}</span>
-            </li>
-          ))}
-        </ul>
-      )}
+      {dropdown}
     </div>
   );
 }
