@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -40,9 +40,104 @@ interface LineItemState {
 interface POFormProps {
   vendors: Pick<Supplier, "id" | "name">[];
   buildings: Pick<Building, "id" | "name">[];
-  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "cost_per_unit">[];
+  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
   defaultValues?: PurchaseOrder & { items: PurchaseOrderItem[] };
   mode?: "create" | "edit";
+}
+
+// Custom combobox that searches by SKU, UPC, or name — themed for dark mode
+function ItemCombobox({
+  value,
+  onChange,
+  onSelect,
+  inventoryItems,
+  placeholder,
+  searchFields,
+  displayField,
+}: {
+  value: string;
+  onChange: (val: string) => void;
+  onSelect: (item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">) => void;
+  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
+  placeholder: string;
+  searchFields: ("sku" | "upc" | "name")[];
+  displayField: "sku" | "name";
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState(value);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Keep local query in sync when parent value changes (e.g. item selected via the other field)
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const filtered =
+    query.trim() === ""
+      ? []
+      : inventoryItems.filter((item) =>
+          searchFields.some((field) => {
+            const v = item[field];
+            return v && v.toLowerCase().includes(query.toLowerCase());
+          })
+        ).slice(0, 10);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const val = e.target.value;
+    setQuery(val);
+    onChange(val);
+    setOpen(true);
+  }
+
+  function handlePick(item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">) {
+    setQuery(item[displayField] ?? "");
+    onSelect(item);
+    setOpen(false);
+  }
+
+  return (
+    <div ref={containerRef} className="relative">
+      <Input
+        value={query}
+        onChange={handleChange}
+        onFocus={() => query.trim() !== "" && setOpen(true)}
+        placeholder={placeholder}
+        className="h-8 text-xs"
+        autoComplete="off"
+      />
+      {open && filtered.length > 0 && (
+        <ul className="absolute z-50 mt-1 max-h-48 w-max min-w-full overflow-auto rounded-md border border-border bg-popover py-1 shadow-md">
+          {filtered.map((item) => (
+            <li
+              key={item.id}
+              className="cursor-pointer px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                handlePick(item);
+              }}
+            >
+              <span className="font-medium">{item.sku}</span>
+              {item.upc && (
+                <span className="ml-2 text-muted-foreground">UPC: {item.upc}</span>
+              )}
+              <span className="ml-2 text-muted-foreground">{item.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 export function POForm({
@@ -108,23 +203,23 @@ export function POForm({
     );
   }
 
-  function handleItemSelect(tempId: string, itemId: string) {
-    const found = inventoryItems.find((i) => i.id === itemId);
-    if (found) {
-      setLineItems((prev) =>
-        prev.map((i) =>
-          i.tempId === tempId
-            ? {
-                ...i,
-                item_id: found.id,
-                item_name: found.name,
-                item_sku: found.sku,
-                unit_cost: found.cost_per_unit?.toString() ?? "",
-              }
-            : i
-        )
-      );
-    }
+  function handleItemSelect(
+    tempId: string,
+    item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">
+  ) {
+    setLineItems((prev) =>
+      prev.map((i) =>
+        i.tempId === tempId
+          ? {
+              ...i,
+              item_id: item.id,
+              item_name: item.name,
+              item_sku: item.sku,
+              unit_cost: item.cost_per_unit?.toString() ?? "",
+            }
+          : i
+      )
+    );
   }
 
   const lineTotal = (qty: number, cost: string) => {
@@ -283,7 +378,7 @@ export function POForm({
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[160px]">Item #</TableHead>
+                    <TableHead className="w-[180px]">SKU / UPC</TableHead>
                     <TableHead>Item Name</TableHead>
                     <TableHead className="w-[80px]">Qty</TableHead>
                     <TableHead className="w-[110px]">Cost</TableHead>
@@ -295,52 +390,26 @@ export function POForm({
                   {lineItems.map((item) => (
                     <TableRow key={item.tempId}>
                       <TableCell className="py-2">
-                        <Input
-                          list={`sku-list-${item.tempId}`}
+                        <ItemCombobox
                           value={item.item_sku}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const found = inventoryItems.find(
-                              (i) => i.sku === val
-                            );
-                            if (found) {
-                              handleItemSelect(item.tempId, found.id);
-                            } else {
-                              updateLineItemField(item.tempId, "item_sku", val);
-                            }
-                          }}
-                          placeholder="SKU"
-                          className="h-8 text-xs"
+                          onChange={(val) => updateLineItemField(item.tempId, "item_sku", val)}
+                          onSelect={(found) => handleItemSelect(item.tempId, found)}
+                          inventoryItems={inventoryItems}
+                          placeholder="SKU or UPC"
+                          searchFields={["sku", "upc"]}
+                          displayField="sku"
                         />
-                        <datalist id={`sku-list-${item.tempId}`}>
-                          {inventoryItems.map((i) => (
-                            <option key={i.id} value={i.sku} />
-                          ))}
-                        </datalist>
                       </TableCell>
                       <TableCell className="py-2">
-                        <Input
-                          list={`name-list-${item.tempId}`}
+                        <ItemCombobox
                           value={item.item_name}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            const found = inventoryItems.find(
-                              (i) => i.name === val
-                            );
-                            if (found) {
-                              handleItemSelect(item.tempId, found.id);
-                            } else {
-                              updateLineItemField(item.tempId, "item_name", val);
-                            }
-                          }}
+                          onChange={(val) => updateLineItemField(item.tempId, "item_name", val)}
+                          onSelect={(found) => handleItemSelect(item.tempId, found)}
+                          inventoryItems={inventoryItems}
                           placeholder="Item name"
-                          className="h-8 text-xs"
+                          searchFields={["name"]}
+                          displayField="name"
                         />
-                        <datalist id={`name-list-${item.tempId}`}>
-                          {inventoryItems.map((i) => (
-                            <option key={i.id} value={i.name} />
-                          ))}
-                        </datalist>
                       </TableCell>
                       <TableCell className="py-2">
                         <Input
