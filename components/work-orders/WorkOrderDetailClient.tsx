@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { toast } from "@/lib/hooks/useToast";
+import { printWorkOrder } from "@/lib/wo-print";
 import {
   startWorkOrder,
   completeWorkOrder,
@@ -218,7 +219,7 @@ export function WorkOrderDetailClient({
             onConfirm={handleDelete}
           />
         )}
-        <Button variant="outline" size="sm" onClick={() => window.print()}>
+        <Button variant="outline" size="sm" onClick={() => printWorkOrder({ wo })}>
           <Printer className="mr-1 h-3.5 w-3.5" />
           Print
         </Button>
