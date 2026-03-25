@@ -262,7 +262,7 @@ export function printWorkOrder({ wo }: WOPrintData) {
     <div class="info-left">
       <div class="info-field">
         <span class="if-label">Tenant&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;:</span>
-        <span class="if-value">${requestedBy}</span>
+        <span class="if-value"></span>
       </div>
       <div class="info-field">
         <span class="if-label">Address&nbsp;&nbsp;&nbsp;&nbsp;:</span>
@@ -391,7 +391,7 @@ export function printWorkOrder({ wo }: WOPrintData) {
 
   <!-- FOOTER INFO -->
   <div class="footer-info">
-    Tenant: ${requestedBy}${buildingAddr ? ` of ${buildingAddr}${unit ? `, ${unit}` : ""}` : ""}
+    Tenant: ___________________________${buildingAddr ? ` of ${buildingAddr}${unit ? `, ${unit}` : ""}` : ""}
     &nbsp;&nbsp;&nbsp; WO # ${wo.wo_number} &nbsp; Issued ${formatDate(wo.created_at)}
     &nbsp;&nbsp;&nbsp; Description: ${wo.notes ? wo.notes.substring(0, 120) : "—"}
   </div>
