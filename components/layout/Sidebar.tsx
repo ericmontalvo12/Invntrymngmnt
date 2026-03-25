@@ -13,8 +13,6 @@ import {
   Users,
   Settings,
   QrCode,
-  PackageCheck,
-  PackageMinus,
   ShoppingCart,
   ClipboardList,
 } from "lucide-react";
@@ -29,8 +27,6 @@ const navItems = [
   ...(features.purchaseOrders ? [{ href: "/purchase-orders", label: "Purchase Orders", icon: ShoppingCart, roles: ["admin", "staff"] }] : []),
   ...(features.workOrders ? [{ href: "/work-orders", label: "Work Orders", icon: ClipboardList, roles: ["admin", "staff", "viewer"] }] : []),
   { href: "/transactions", label: "Transactions", icon: ArrowLeftRight, roles: ["admin", "staff", "viewer"] },
-  { href: "/receiving", label: "Receiving", icon: PackageCheck, roles: ["admin", "staff"] },
-  { href: "/dispatch", label: "Dispatch", icon: PackageMinus, roles: ["admin", "staff"] },
   { href: "/scan", label: "Scan Mode", icon: QrCode, roles: ["admin", "staff"] },
   ...(features.vendors ? [{ href: "/vendors", label: "Vendors", icon: Truck, roles: ["admin", "staff", "viewer"] }] : []),
   { href: "/categories", label: "Categories", icon: Tag, roles: ["admin", "staff", "viewer"] },
