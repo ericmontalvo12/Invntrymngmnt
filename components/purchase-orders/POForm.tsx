@@ -129,6 +129,7 @@ interface POFormProps {
   buildings: Pick<Building, "id" | "name">[];
   inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
   defaultValues?: PurchaseOrder & { items: PurchaseOrderItem[] };
+  initialItem?: { id: string; name: string; sku: string; cost_per_unit: number | null; quantity: number };
   mode?: "create" | "edit";
 }
 
@@ -137,6 +138,7 @@ export function POForm({
   buildings,
   inventoryItems,
   defaultValues,
+  initialItem,
   mode = "create",
 }: POFormProps) {
   const router = useRouter();
@@ -159,7 +161,20 @@ export function POForm({
       quantity: item.quantity_ordered,
       unit_cost: item.unit_cost?.toString() ?? "",
       notes: item.notes ?? "",
-    })) ?? []
+    })) ??
+    (initialItem
+      ? [
+          {
+            tempId: crypto.randomUUID(),
+            item_id: initialItem.id,
+            item_name: initialItem.name,
+            item_sku: initialItem.sku,
+            quantity: initialItem.quantity,
+            unit_cost: initialItem.cost_per_unit?.toString() ?? "",
+            notes: "",
+          },
+        ]
+      : [])
   );
 
   function setHeaderField(k: keyof typeof header, v: string) {

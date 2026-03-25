@@ -3,7 +3,11 @@ import { redirect } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { POForm } from "@/components/purchase-orders/POForm";
 
-export default async function NewPurchaseOrderPage() {
+interface PageProps {
+  searchParams: Promise<{ item_id?: string; qty?: string }>;
+}
+
+export default async function NewPurchaseOrderPage({ searchParams }: PageProps) {
   const supabase = await createClient();
 
   const {
@@ -19,6 +23,8 @@ export default async function NewPurchaseOrderPage() {
 
   if (!profile || profile.role === "viewer") redirect("/purchase-orders");
 
+  const params = await searchParams;
+
   const [
     { data: vendors },
     { data: buildings },
@@ -33,6 +39,20 @@ export default async function NewPurchaseOrderPage() {
       .order("name"),
   ]);
 
+  let initialItem: { id: string; name: string; sku: string; cost_per_unit: number | null; quantity: number } | undefined;
+  if (params.item_id) {
+    const found = (items ?? []).find((i) => i.id === params.item_id);
+    if (found) {
+      initialItem = {
+        id: found.id,
+        name: found.name,
+        sku: found.sku,
+        cost_per_unit: found.cost_per_unit,
+        quantity: params.qty ? Math.max(1, parseInt(params.qty, 10) || 1) : 1,
+      };
+    }
+  }
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -43,6 +63,7 @@ export default async function NewPurchaseOrderPage() {
         vendors={vendors ?? []}
         buildings={buildings ?? []}
         inventoryItems={items ?? []}
+        initialItem={initialItem}
       />
     </div>
   );

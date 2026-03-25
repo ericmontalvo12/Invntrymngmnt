@@ -9,6 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { StockStatusBadge } from "@/components/shared/StatusBadge";
@@ -54,6 +55,7 @@ export default async function ReorderPage() {
                   <TableHead>Supplier</TableHead>
                   <TableHead>Stock</TableHead>
                   <TableHead>Reorder Status</TableHead>
+                  <TableHead />
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -92,6 +94,15 @@ export default async function ReorderPage() {
                         itemId={item.id}
                         currentStatus={item.reorder_status}
                       />
+                    </TableCell>
+                    <TableCell>
+                      <Button asChild size="sm" variant="outline">
+                        <Link
+                          href={`/purchase-orders/new?item_id=${item.id}&qty=${item.reorder_quantity}`}
+                        >
+                          Create PO
+                        </Link>
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
