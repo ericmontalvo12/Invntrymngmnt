@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition, useRef, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -45,6 +45,8 @@ interface POFormProps {
   mode?: "create" | "edit";
 }
 
+type ItemOption = Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">;
+
 // Inline search dropdown for SKU / UPC lookup
 function ItemSearchInput({
   inventoryItems,
@@ -53,36 +55,29 @@ function ItemSearchInput({
   onSelect,
   onClear,
 }: {
-  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
+  inventoryItems: ItemOption[];
   selectedId: string;
   selectedSku: string;
-  onSelect: (item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">) => void;
+  onSelect: (item: ItemOption) => void;
   onClear: () => void;
 }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  const results = query.length > 0
+  const results = query.trim().length > 0
     ? inventoryItems.filter((i) => {
         const q = query.toLowerCase();
         return (
           i.sku.toLowerCase().includes(q) ||
-          (i.upc?.toLowerCase().includes(q) ?? false)
+          (i.upc != null && i.upc.toLowerCase().includes(q))
         );
       }).slice(0, 10)
     : [];
 
-  // Close dropdown on outside click
-  useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", handleClick);
-    return () => document.removeEventListener("mousedown", handleClick);
-  }, []);
+  function handleBlur() {
+    // Delay so clicks on result buttons register first
+    setTimeout(() => setOpen(false), 150);
+  }
 
   if (selectedId) {
     return (
@@ -100,29 +95,27 @@ function ItemSearchInput({
   }
 
   return (
-    <div ref={containerRef} className="relative">
+    <div className="relative">
       <div className="relative">
         <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-muted-foreground pointer-events-none" />
         <Input
           value={query}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
+          onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
+          onBlur={handleBlur}
           placeholder="SKU or UPC..."
           className="h-8 pl-6 text-xs"
+          autoComplete="off"
         />
       </div>
       {open && results.length > 0 && (
-        <div className="absolute z-50 mt-1 w-64 rounded-md border bg-popover shadow-md">
+        <div className="absolute left-0 top-full z-[100] mt-1 w-72 rounded-md border bg-popover shadow-lg">
           {results.map((item) => (
             <button
               key={item.id}
               type="button"
               className="w-full px-3 py-2 text-left text-xs hover:bg-accent"
-              onMouseDown={(e) => {
-                e.preventDefault();
+              onClick={() => {
                 onSelect(item);
                 setQuery("");
                 setOpen(false);
@@ -132,7 +125,7 @@ function ItemSearchInput({
               {item.upc && (
                 <span className="ml-2 text-muted-foreground">UPC: {item.upc}</span>
               )}
-              <div className="text-muted-foreground truncate">{item.name}</div>
+              <div className="truncate text-muted-foreground">{item.name}</div>
             </button>
           ))}
         </div>
