@@ -6,7 +6,7 @@ interface POPrintData {
 }
 
 function formatDate(dateStr: string): string {
-  const d = new Date(dateStr + "T00:00:00");
+  const d = dateStr.includes("T") ? new Date(dateStr) : new Date(dateStr + "T00:00:00");
   const month = d.toLocaleDateString("en-US", { month: "long" });
   const day = d.getDate();
   const year = d.getFullYear();
