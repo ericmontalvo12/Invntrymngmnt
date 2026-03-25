@@ -366,7 +366,7 @@ export function printPurchaseOrder({ po, orderedByName }: POPrintData) {
   /* ── Print ── */
   @media print {
     body { padding: 0; }
-    @page { margin: 0.3in; size: letter portrait; }
+    @page { margin: 0.3in; size: letter landscape; }
     .po-page { padding: 0; min-height: 100vh; }
   }
 </style>
