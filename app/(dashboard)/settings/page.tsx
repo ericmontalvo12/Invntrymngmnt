@@ -96,19 +96,6 @@ export default async function SettingsPage() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Database Setup</CardTitle>
-            <CardDescription>Run this SQL in your Supabase SQL editor to set up the schema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Navigate to your Supabase project → SQL Editor and run the schema SQL provided in the{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-xs">supabase/schema.sql</code> file
-              in the repository root. Enable Row Level Security on all tables after running the schema.
-            </p>
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
