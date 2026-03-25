@@ -21,7 +21,6 @@ import { toast } from "@/lib/hooks/useToast";
 import { printPurchaseOrder } from "@/lib/po-print";
 import {
   completePurchaseOrder,
-  confirmPurchaseOrder,
   voidPurchaseOrder,
 } from "@/lib/actions/purchase-orders";
 import type { PurchaseOrder, PurchaseOrderItem, POStatus } from "@/types";
@@ -31,8 +30,8 @@ function POStatusBadge({ status }: { status: POStatus }) {
     POStatus,
     { label: string; className: string }
   > = {
-    draft: { label: "Draft", className: "bg-muted text-muted-foreground" },
-    ordered: { label: "Open", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+    draft: { label: "Open", className: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400" },
+    ordered: { label: "Ordered", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
     confirmed: { label: "Ordered", className: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400" },
     partially_received: { label: "Partial", className: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400" },
     received: { label: "Received", className: "bg-emerald-600 text-white dark:bg-emerald-900/30 dark:text-emerald-400" },
@@ -87,10 +86,9 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
   }, 0);
 
   const canEdit = po.status === "draft" && canAct;
-  const canComplete = po.status === "draft" && canAct;
-  const canConfirm = po.status === "ordered" && canAct;
+  const canMarkAsOrdered = po.status === "draft" && canAct;
   const canReceive =
-    (po.status === "confirmed" || po.status === "partially_received") && canAct;
+    (po.status === "ordered" || po.status === "partially_received") && canAct;
   const canVoid =
     po.status !== "received" && po.status !== "voided" && isAdmin;
 
@@ -106,20 +104,7 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
             </Button>
           </Link>
         )}
-        {canComplete && (
-          <ConfirmDialog
-            trigger={
-              <Button size="sm" disabled={isPending}>
-                Complete PO
-              </Button>
-            }
-            title="Complete this PO?"
-            description="This will mark the PO as ordered and send it to the vendor. You can still receive items afterward."
-            confirmLabel="Complete PO"
-            onConfirm={handleComplete}
-          />
-        )}
-        {canConfirm && (
+        {canMarkAsOrdered && (
           <ConfirmDialog
             trigger={
               <Button size="sm" disabled={isPending}>
@@ -129,17 +114,7 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
             title="Mark PO as Ordered?"
             description="This confirms the order has been placed with the vendor."
             confirmLabel="Mark as Ordered"
-            onConfirm={() => {
-              startTransition(async () => {
-                const result = await confirmPurchaseOrder(po.id);
-                if (!result.success) {
-                  toast({ title: "Error", description: result.error, variant: "destructive" });
-                  return;
-                }
-                toast({ title: "PO marked as ordered" });
-                router.refresh();
-              });
-            }}
+            onConfirm={handleComplete}
           />
         )}
         {canReceive && (
@@ -161,22 +136,7 @@ export function PODetailClient({ po, isAdmin, isStaff, orderedByName }: PODetail
         <Button
           variant="outline"
           size="sm"
-          disabled={isPending}
-          onClick={() => {
-            if (po.status === "draft") {
-              startTransition(async () => {
-                const result = await completePurchaseOrder(po.id);
-                if (!result.success) {
-                  toast({ title: "Error", description: result.error, variant: "destructive" });
-                  return;
-                }
-                router.refresh();
-                printPurchaseOrder({ po, orderedByName });
-              });
-            } else {
-              printPurchaseOrder({ po, orderedByName });
-            }
-          }}
+          onClick={() => printPurchaseOrder({ po, orderedByName })}
         >
           <Printer className="mr-1 h-3.5 w-3.5" />
           Print PO

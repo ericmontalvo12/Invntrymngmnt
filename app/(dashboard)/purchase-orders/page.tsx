@@ -27,8 +27,8 @@ import { createClient } from "@/lib/supabase/client";
 import type { PurchaseOrder, POStatus } from "@/types";
 
 const STATUS_LABELS: Record<POStatus, string> = {
-  draft: "Draft",
-  ordered: "Open",
+  draft: "Open",
+  ordered: "Ordered",
   confirmed: "Ordered",
   partially_received: "Partially Received",
   received: "Received",
@@ -36,8 +36,8 @@ const STATUS_LABELS: Record<POStatus, string> = {
 };
 
 const STATUS_CLASSES: Record<POStatus, string> = {
-  draft: "bg-muted text-muted-foreground",
-  ordered: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  draft: "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400",
+  ordered: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
   confirmed: "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400",
   partially_received: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
   received: "bg-emerald-600 text-white dark:bg-emerald-900/30 dark:text-emerald-400",
