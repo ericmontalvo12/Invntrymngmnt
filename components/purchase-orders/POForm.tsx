@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +27,64 @@ import { toast } from "@/lib/hooks/useToast";
 import { createPurchaseOrder, updatePurchaseOrder } from "@/lib/actions/purchase-orders";
 import type { Supplier, Building, InventoryItem, PurchaseOrder, PurchaseOrderItem } from "@/types";
 
+function UPCSearch({
+  inventoryItems,
+  onSelect,
+}: {
+  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
+  onSelect: (item: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const results = query.trim()
+    ? inventoryItems
+        .filter((i) => i.upc && i.upc.includes(query.trim()))
+        .slice(0, 8)
+    : [];
+
+  return (
+    <div ref={ref} className="relative mt-1">
+      <Input
+        value={query}
+        onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+        onFocus={() => query.trim() && setOpen(true)}
+        placeholder="Search UPC…"
+        className="h-7 text-xs"
+        autoComplete="off"
+      />
+      {open && results.length > 0 && (
+        <ul className="absolute z-50 mt-1 max-h-48 w-max min-w-full overflow-auto rounded-md border border-border bg-popover py-1 shadow-md">
+          {results.map((item) => (
+            <li
+              key={item.id}
+              className="cursor-pointer px-3 py-1.5 text-xs text-popover-foreground hover:bg-accent hover:text-accent-foreground"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                onSelect(item);
+                setQuery("");
+                setOpen(false);
+              }}
+            >
+              <span className="font-mono">{item.upc}</span>
+              <span className="ml-2 text-muted-foreground">{item.name}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 interface LineItemState {
   tempId: string;
   item_id: string;
@@ -40,7 +98,7 @@ interface LineItemState {
 interface POFormProps {
   vendors: Pick<Supplier, "id" | "name">[];
   buildings: Pick<Building, "id" | "name">[];
-  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "cost_per_unit">[];
+  inventoryItems: Pick<InventoryItem, "id" | "name" | "sku" | "upc" | "cost_per_unit">[];
   defaultValues?: PurchaseOrder & { items: PurchaseOrderItem[] };
   mode?: "create" | "edit";
 }
@@ -317,6 +375,10 @@ export function POForm({
                             <option key={i.id} value={i.sku} />
                           ))}
                         </datalist>
+                        <UPCSearch
+                          inventoryItems={inventoryItems}
+                          onSelect={(found) => handleItemSelect(item.tempId, found.id)}
+                        />
                       </TableCell>
                       <TableCell className="py-2">
                         <Input
