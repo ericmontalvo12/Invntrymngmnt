@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const [email, setEmail] = useState("");
+const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -30,8 +28,7 @@ export default function LoginPage() {
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    window.location.href = "/dashboard";
   }
 
   return (

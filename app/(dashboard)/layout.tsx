@@ -15,7 +15,7 @@ export default async function DashboardLayout({
     data: { user },
   } = await supabase.auth.getUser();
 
-  if (!user) redirect("/login");
+  if (!user) redirect("/login?error=session");
 
   const { data: profile } = await supabase
     .from("profiles")
@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  if (!profile) redirect("/login");
+  if (!profile) redirect("/login?error=session");
 
   return (
     <div className="flex h-screen overflow-hidden">

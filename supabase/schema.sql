@@ -163,8 +163,15 @@ begin
     new.id,
     new.email,
     coalesce(new.raw_user_meta_data->>'full_name', ''),
-    coalesce((new.raw_user_meta_data->>'role')::user_role, 'viewer')
-  );
+    case
+      when new.raw_user_meta_data->>'role' in ('admin','staff','viewer')
+      then (new.raw_user_meta_data->>'role')::user_role
+      else 'viewer'::user_role
+    end
+  )
+  on conflict (id) do nothing;
+  return new;
+exception when others then
   return new;
 end;
 $$ language plpgsql security definer;
