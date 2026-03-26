@@ -23,7 +23,7 @@ export default async function DashboardLayout({
     .eq("id", user.id)
     .single();
 
-  if (!profile) redirect("/login");
+  if (!profile) redirect("/login?error=session");
 
   return (
     <div className="flex h-screen overflow-hidden">
