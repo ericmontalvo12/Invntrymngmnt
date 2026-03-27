@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { OrgSettingsForm } from "./OrgSettingsForm";
 
 export default async function SettingsPage() {
   const supabase = await createClient();
@@ -17,6 +18,17 @@ export default async function SettingsPage() {
     .single();
 
   if (profile?.role !== "admin") redirect("/dashboard");
+
+  // Fetch org if exists
+  let orgName: string | null = null;
+  if (profile.organization_id) {
+    const { data: org } = await supabase
+      .from("organizations")
+      .select("name")
+      .eq("id", profile.organization_id)
+      .single();
+    orgName = org?.name ?? null;
+  }
 
   // Pull some stats
   const [
@@ -32,6 +44,11 @@ export default async function SettingsPage() {
   return (
     <div className="space-y-6">
       <PageHeader title="Settings" description="Application configuration and information" />
+
+      <OrgSettingsForm
+        hasOrg={!!profile.organization_id}
+        orgName={orgName}
+      />
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

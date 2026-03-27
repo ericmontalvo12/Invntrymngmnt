@@ -193,6 +193,7 @@ export async function removeStock(formData: unknown): Promise<ActionResult> {
     .from("inventory_items")
     .select("quantity_on_hand, minimum_threshold")
     .eq("id", parsed.data.item_id)
+    .eq("organization_id", session.organizationId)
     .single();
 
   if (fetchError || !item) return { success: false, error: "Item not found" };
@@ -229,6 +230,7 @@ export async function removeStock(formData: unknown): Promise<ActionResult> {
       quantity_after: finalQty,
       reason: parsed.data.reason || "Stock removed",
       note: parsed.data.note,
+      organization_id: session.organizationId,
     });
 
   if (txError) return { success: false, error: txError.message };
@@ -257,6 +259,7 @@ export async function adjustStock(formData: unknown): Promise<ActionResult> {
     .from("inventory_items")
     .select("quantity_on_hand, minimum_threshold")
     .eq("id", parsed.data.item_id)
+    .eq("organization_id", session.organizationId)
     .single();
 
   if (fetchError || !item) return { success: false, error: "Item not found" };
@@ -284,6 +287,7 @@ export async function adjustStock(formData: unknown): Promise<ActionResult> {
       quantity_after: quantityAfter,
       reason: "Manual adjustment",
       note: parsed.data.note,
+      organization_id: session.organizationId,
     });
 
   if (txError) return { success: false, error: txError.message };
@@ -312,6 +316,7 @@ export async function receiveStock(formData: unknown): Promise<ActionResult> {
     .from("inventory_items")
     .select("quantity_on_hand")
     .eq("id", parsed.data.item_id)
+    .eq("organization_id", session.organizationId)
     .single();
 
   if (fetchError || !item) return { success: false, error: "Item not found" };
@@ -340,6 +345,7 @@ export async function receiveStock(formData: unknown): Promise<ActionResult> {
       quantity_after: quantityAfter,
       reason: "Received",
       note: parsed.data.note,
+      organization_id: session.organizationId,
     });
 
   if (txError) return { success: false, error: txError.message };
@@ -369,6 +375,7 @@ export async function dispatchStock(formData: unknown): Promise<ActionResult> {
     .from("inventory_items")
     .select("quantity_on_hand, minimum_threshold")
     .eq("id", parsed.data.item_id)
+    .eq("organization_id", session.organizationId)
     .single();
 
   if (fetchError || !item) return { success: false, error: "Item not found" };
@@ -404,6 +411,7 @@ export async function dispatchStock(formData: unknown): Promise<ActionResult> {
       quantity_after: finalQty,
       reason: "Dispatch",
       note: parsed.data.note,
+      organization_id: session.organizationId,
     });
 
   if (txError) return { success: false, error: txError.message };
