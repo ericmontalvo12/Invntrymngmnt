@@ -18,12 +18,13 @@ async function requireAdmin() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role !== "admin") return { error: "Admin access required" };
-  return { userId: user.id };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, organizationId: profile.organization_id as string };
 }
 
 export async function updateUserRole(
@@ -43,6 +44,7 @@ export async function updateUserRole(
     .from("profiles")
     .update({ role: parsed.data.role })
     .eq("id", userId)
+    .eq("organization_id", auth.organizationId)
     .select()
     .single();
 
@@ -79,7 +81,7 @@ export async function inviteUser(email: string, role: UserRole): Promise<ActionR
 
   const supabase = await createServiceClient();
   const { error } = await supabase.auth.admin.inviteUserByEmail(email, {
-    data: { role },
+    data: { role, organization_id: auth.organizationId },
   });
 
   if (error) return { success: false, error: error.message };

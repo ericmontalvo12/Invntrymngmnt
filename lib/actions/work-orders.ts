@@ -6,7 +6,7 @@ import { workOrderSchema } from "@/lib/validations/work-orders";
 import type { ActionResult, WorkOrder, UserRole } from "@/types";
 
 async function requireAdminOrStaff(): Promise<
-  { userId: string; role: UserRole } | { error: string }
+  { userId: string; role: UserRole; organizationId: string } | { error: string }
 > {
   const supabase = await createClient();
   const {
@@ -16,17 +16,18 @@ async function requireAdminOrStaff(): Promise<
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role === "viewer")
     return { error: "Staff access required" };
-  return { userId: user.id, role: profile.role as UserRole };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, role: profile.role as UserRole, organizationId: profile.organization_id as string };
 }
 
 async function requireAdmin(): Promise<
-  { userId: string; role: UserRole } | { error: string }
+  { userId: string; role: UserRole; organizationId: string } | { error: string }
 > {
   const supabase = await createClient();
   const {
@@ -36,13 +37,14 @@ async function requireAdmin(): Promise<
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role !== "admin")
     return { error: "Admin access required" };
-  return { userId: user.id, role: profile.role as UserRole };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, role: profile.role as UserRole, organizationId: profile.organization_id as string };
 }
 
 export async function createWorkOrder(
@@ -64,7 +66,8 @@ export async function createWorkOrder(
   // Generate WO number
   const { count } = await supabase
     .from("work_orders")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", auth.organizationId);
 
   const nextNum = (count ?? 0) + 1;
   const woNumber = `WO-${String(nextNum).padStart(5, "0")}`;
@@ -84,6 +87,7 @@ export async function createWorkOrder(
       wo_number: woNumber,
       status: "open",
       created_by: auth.userId,
+      organization_id: auth.organizationId,
     })
     .select()
     .single();
@@ -127,6 +131,7 @@ export async function updateWorkOrder(
     .from("work_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!existing) return { success: false, error: "Work order not found" };
@@ -155,6 +160,7 @@ export async function updateWorkOrder(
       extended_due_date: headerData.extended_due_date || null,
     })
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .select()
     .single();
 
@@ -195,6 +201,7 @@ export async function startWorkOrder(id: string): Promise<ActionResult> {
     .from("work_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!wo) return { success: false, error: "Work order not found" };
@@ -204,7 +211,8 @@ export async function startWorkOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("work_orders")
     .update({ status: "in_progress" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -223,6 +231,7 @@ export async function completeWorkOrder(id: string): Promise<ActionResult> {
     .from("work_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!wo) return { success: false, error: "Work order not found" };
@@ -236,7 +245,8 @@ export async function completeWorkOrder(id: string): Promise<ActionResult> {
       completed_at: new Date().toISOString(),
       completed_by: auth.userId,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -255,6 +265,7 @@ export async function cancelWorkOrder(id: string): Promise<ActionResult> {
     .from("work_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!wo) return { success: false, error: "Work order not found" };
@@ -264,7 +275,8 @@ export async function cancelWorkOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("work_orders")
     .update({ status: "cancelled" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -283,6 +295,7 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
     .from("work_orders")
     .select("status, dispatched_at, wo_number")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!wo) return { success: false, error: "Work order not found" };
@@ -332,6 +345,7 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
             quantity_after: quantityAfter,
             reason: "Work order dispatch",
             note: `WO# ${wo.wo_number}`,
+            organization_id: auth.organizationId,
           });
 
         if (txError) return { success: false, error: txError.message };
@@ -342,7 +356,8 @@ export async function dispatchWorkOrderInventory(id: string): Promise<ActionResu
   const { error } = await supabase
     .from("work_orders")
     .update({ dispatched_at: new Date().toISOString() })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -364,6 +379,7 @@ export async function deleteWorkOrder(id: string): Promise<ActionResult> {
     .from("work_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!wo) return { success: false, error: "Work order not found" };
@@ -373,7 +389,8 @@ export async function deleteWorkOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("work_orders")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 

@@ -6,7 +6,7 @@ import { supplierSchema } from "@/lib/validations/suppliers";
 import type { ActionResult, Supplier, UserRole } from "@/types";
 
 async function requireAdmin(): Promise<
-  { userId: string; role: UserRole } | { error: string }
+  { userId: string; role: UserRole; organizationId: string } | { error: string }
 > {
   const supabase = await createClient();
   const {
@@ -16,12 +16,13 @@ async function requireAdmin(): Promise<
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role !== "admin") return { error: "Admin access required" };
-  return { userId: user.id, role: profile.role as UserRole };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, role: profile.role as UserRole, organizationId: profile.organization_id as string };
 }
 
 export async function createSupplier(
@@ -39,6 +40,7 @@ export async function createSupplier(
   const data = {
     ...parsed.data,
     email: parsed.data.email || null,
+    organization_id: auth.organizationId,
   };
 
   const supabase = await createServiceClient();
