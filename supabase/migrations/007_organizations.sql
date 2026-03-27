@@ -3,7 +3,13 @@
 -- Run this in your Supabase SQL Editor
 -- ============================================================
 
--- 1. Organizations table
+-- 1. Helper functions first (required by RLS policies below)
+CREATE OR REPLACE FUNCTION get_current_user_org_id()
+RETURNS uuid AS $$
+  SELECT organization_id FROM profiles WHERE id = auth.uid()
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- 2. Organizations table
 CREATE TABLE organizations (
   id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   name       text NOT NULL,
