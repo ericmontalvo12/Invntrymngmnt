@@ -1,4 +1,11 @@
 export type UserRole = "admin" | "staff" | "viewer";
+
+export interface Organization {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+}
 export type ItemStatus = "active" | "inactive" | "discontinued";
 export type TransactionType =
   | "stock_in"
@@ -21,6 +28,7 @@ export interface Profile {
   full_name: string | null;
   role: UserRole;
   avatar_url: string | null;
+  organization_id: string | null;
   created_at: string;
   updated_at: string;
 }

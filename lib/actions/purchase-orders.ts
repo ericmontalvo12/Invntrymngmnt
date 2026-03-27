@@ -6,7 +6,7 @@ import { purchaseOrderSchema } from "@/lib/validations/purchase-orders";
 import type { ActionResult, PurchaseOrder, UserRole } from "@/types";
 
 async function requireAdminOrStaff(): Promise<
-  { userId: string; role: UserRole } | { error: string }
+  { userId: string; role: UserRole; organizationId: string } | { error: string }
 > {
   const supabase = await createClient();
   const {
@@ -16,17 +16,18 @@ async function requireAdminOrStaff(): Promise<
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role === "viewer")
     return { error: "Staff access required" };
-  return { userId: user.id, role: profile.role as UserRole };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, role: profile.role as UserRole, organizationId: profile.organization_id as string };
 }
 
 async function requireAdmin(): Promise<
-  { userId: string; role: UserRole } | { error: string }
+  { userId: string; role: UserRole; organizationId: string } | { error: string }
 > {
   const supabase = await createClient();
   const {
@@ -36,13 +37,14 @@ async function requireAdmin(): Promise<
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role !== "admin")
     return { error: "Admin access required" };
-  return { userId: user.id, role: profile.role as UserRole };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, role: profile.role as UserRole, organizationId: profile.organization_id as string };
 }
 
 export async function createPurchaseOrder(
@@ -64,7 +66,8 @@ export async function createPurchaseOrder(
   // Generate PO number
   const { count } = await supabase
     .from("purchase_orders")
-    .select("*", { count: "exact", head: true });
+    .select("*", { count: "exact", head: true })
+    .eq("organization_id", auth.organizationId);
 
   const nextNum = (count ?? 0) + 1;
   const poNumber = `PO-${String(nextNum).padStart(5, "0")}`;
@@ -81,6 +84,7 @@ export async function createPurchaseOrder(
       po_number: poNumber,
       status: "draft",
       created_by: auth.userId,
+      organization_id: auth.organizationId,
     })
     .select()
     .single();
@@ -124,6 +128,7 @@ export async function updatePurchaseOrder(
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!existing) return { success: false, error: "PO not found" };
@@ -149,6 +154,7 @@ export async function updatePurchaseOrder(
       building_id: headerData.building_id || null,
     })
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .select()
     .single();
 
@@ -188,6 +194,7 @@ export async function completePurchaseOrder(id: string): Promise<ActionResult> {
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!po) return { success: false, error: "PO not found" };
@@ -197,7 +204,8 @@ export async function completePurchaseOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("purchase_orders")
     .update({ status: "ordered" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -232,6 +240,7 @@ export async function confirmPurchaseOrder(id: string): Promise<ActionResult> {
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!po) return { success: false, error: "PO not found" };
@@ -241,7 +250,8 @@ export async function confirmPurchaseOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("purchase_orders")
     .update({ status: "confirmed" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -260,6 +270,7 @@ export async function voidPurchaseOrder(id: string): Promise<ActionResult> {
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!po) return { success: false, error: "PO not found" };
@@ -269,7 +280,8 @@ export async function voidPurchaseOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("purchase_orders")
     .update({ status: "voided" })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -291,6 +303,7 @@ export async function receivePurchaseOrderItems(
     .from("purchase_orders")
     .select("*, items:purchase_order_items(*)")
     .eq("id", poId)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (poError || !po) return { success: false, error: "PO not found" };
@@ -339,6 +352,7 @@ export async function receivePurchaseOrderItems(
           quantity_after: quantityAfter,
           reason: `Received from ${po.po_number}`,
           note: null,
+          organization_id: auth.organizationId,
         });
       }
     }
@@ -383,6 +397,7 @@ export async function deletePurchaseOrder(id: string): Promise<ActionResult> {
     .from("purchase_orders")
     .select("status")
     .eq("id", id)
+    .eq("organization_id", auth.organizationId)
     .single();
 
   if (!po) return { success: false, error: "PO not found" };
@@ -392,7 +407,8 @@ export async function deletePurchaseOrder(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("purchase_orders")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", auth.organizationId);
 
   if (error) return { success: false, error: error.message };
 

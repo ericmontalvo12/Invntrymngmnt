@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
   // Optimistic session check — just look for the Supabase auth cookie.
   // The dashboard layout does the real validation via getUser().
   const hasSession = request.cookies.getAll().some(
-    (c) => c.name.startsWith("sb-") && c.name.endsWith("-auth-token")
+    (c) => c.name.startsWith("sb-") && c.name.includes("-auth-token")
   );
 
   // Redirect unauthenticated users to login
