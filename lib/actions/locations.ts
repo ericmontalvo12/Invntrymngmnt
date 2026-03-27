@@ -14,12 +14,13 @@ async function requireAdmin() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
   if (!profile || profile.role !== "admin") return { error: "Admin access required" };
-  return { userId: user.id };
+  if (!profile.organization_id) return { error: "No organization assigned. Please set up your organization in Settings." };
+  return { userId: user.id, organizationId: profile.organization_id as string };
 }
 
 export async function createLocation(
@@ -36,7 +37,7 @@ export async function createLocation(
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("locations")
-    .insert(parsed.data)
+    .insert({ ...parsed.data, organization_id: auth.organizationId })
     .select()
     .single();
 

@@ -12,6 +12,7 @@ import type { ActionResult, InventoryItem, UserRole } from "@/types";
 async function getSessionAndRole(): Promise<{
   userId: string;
   role: UserRole;
+  organizationId: string;
 } | null> {
   const supabase = await createClient();
   const {
@@ -21,12 +22,12 @@ async function getSessionAndRole(): Promise<{
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("role")
+    .select("role, organization_id")
     .eq("id", user.id)
     .single();
 
-  if (!profile) return null;
-  return { userId: user.id, role: profile.role as UserRole };
+  if (!profile || !profile.organization_id) return null;
+  return { userId: user.id, role: profile.role as UserRole, organizationId: profile.organization_id as string };
 }
 
 export async function createInventoryItem(
@@ -45,7 +46,7 @@ export async function createInventoryItem(
   const supabase = await createServiceClient();
   const { data, error } = await supabase
     .from("inventory_items")
-    .insert({ ...parsed.data, created_by: session.userId })
+    .insert({ ...parsed.data, created_by: session.userId, organization_id: session.organizationId })
     .select(`*, category:categories(*), building:buildings(*), supplier:suppliers(*)`)
     .single();
 
@@ -80,6 +81,7 @@ export async function updateInventoryItem(
     .from("inventory_items")
     .update(parsed.data)
     .eq("id", id)
+    .eq("organization_id", session.organizationId)
     .select(`*, category:categories(*), building:buildings(*), supplier:suppliers(*)`)
     .single();
 
@@ -106,7 +108,8 @@ export async function deleteInventoryItem(id: string): Promise<ActionResult> {
   const { error } = await supabase
     .from("inventory_items")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("organization_id", session.organizationId);
 
   if (error) return { success: false, error: error.message };
 
@@ -133,6 +136,7 @@ export async function addStock(formData: unknown): Promise<ActionResult> {
     .from("inventory_items")
     .select("quantity_on_hand")
     .eq("id", parsed.data.item_id)
+    .eq("organization_id", session.organizationId)
     .single();
 
   if (fetchError || !item) return { success: false, error: "Item not found" };
@@ -160,6 +164,7 @@ export async function addStock(formData: unknown): Promise<ActionResult> {
       quantity_after: quantityAfter,
       reason: parsed.data.reason || "Stock added",
       note: parsed.data.note,
+      organization_id: session.organizationId,
     });
 
   if (txError) return { success: false, error: txError.message };
