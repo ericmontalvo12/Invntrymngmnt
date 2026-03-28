@@ -3,7 +3,16 @@
 -- Run this in your Supabase SQL Editor
 -- ============================================================
 
--- 1. Organizations table
+-- 1. Helper function FIRST using plpgsql (body is not validated at creation
+--    time, so this works even before profiles.organization_id exists)
+CREATE OR REPLACE FUNCTION get_current_user_org_id()
+RETURNS uuid AS $$
+BEGIN
+  RETURN (SELECT organization_id FROM profiles WHERE id = auth.uid());
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+
+-- 2. Organizations table + RLS (function now exists)
 CREATE TABLE organizations (
   id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   name       text NOT NULL,
@@ -25,35 +34,29 @@ CREATE POLICY "Admins can update own org"
   ON organizations FOR UPDATE TO authenticated
   USING (id = get_current_user_org_id() AND get_current_user_role() = 'admin');
 
--- 2. Add organization_id to all data tables
-ALTER TABLE profiles ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL;
-ALTER TABLE categories ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE locations ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE suppliers ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE inventory_items ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+-- 3. Add organization_id to all data tables
+ALTER TABLE profiles            ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL;
+ALTER TABLE categories          ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE locations           ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE suppliers           ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE inventory_items     ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
 ALTER TABLE inventory_transactions ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE buildings ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE projects ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE purchase_orders ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE work_orders ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE buildings           ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE projects            ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE purchase_orders     ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE work_orders         ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
 
--- 3. Replace global unique constraints with org-scoped ones
-ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_name_key;
-ALTER TABLE locations DROP CONSTRAINT IF EXISTS locations_name_key;
-ALTER TABLE suppliers DROP CONSTRAINT IF EXISTS suppliers_name_key;
+-- 4. Replace global unique constraints with org-scoped ones
+ALTER TABLE categories      DROP CONSTRAINT IF EXISTS categories_name_key;
+ALTER TABLE locations       DROP CONSTRAINT IF EXISTS locations_name_key;
+ALTER TABLE suppliers       DROP CONSTRAINT IF EXISTS suppliers_name_key;
 ALTER TABLE inventory_items DROP CONSTRAINT IF EXISTS inventory_items_sku_key;
 ALTER TABLE inventory_items DROP CONSTRAINT IF EXISTS inventory_items_upc_key;
 
-ALTER TABLE categories ADD CONSTRAINT categories_org_name_key UNIQUE (organization_id, name);
-ALTER TABLE locations ADD CONSTRAINT locations_org_name_key UNIQUE (organization_id, name);
-ALTER TABLE suppliers ADD CONSTRAINT suppliers_org_name_key UNIQUE (organization_id, name);
-ALTER TABLE inventory_items ADD CONSTRAINT inventory_items_org_sku_key UNIQUE (organization_id, sku);
-
--- 4. Helper to get current user's org
-CREATE OR REPLACE FUNCTION get_current_user_org_id()
-RETURNS uuid AS $$
-  SELECT organization_id FROM profiles WHERE id = auth.uid()
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+ALTER TABLE categories      ADD CONSTRAINT categories_org_name_key     UNIQUE (organization_id, name);
+ALTER TABLE locations       ADD CONSTRAINT locations_org_name_key       UNIQUE (organization_id, name);
+ALTER TABLE suppliers       ADD CONSTRAINT suppliers_org_name_key       UNIQUE (organization_id, name);
+ALTER TABLE inventory_items ADD CONSTRAINT inventory_items_org_sku_key  UNIQUE (organization_id, sku);
 
 -- 5. Create a default org for any existing profiles without one
 DO $$

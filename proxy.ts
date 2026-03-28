@@ -9,6 +9,11 @@ export function proxy(request: NextRequest) {
     (c) => c.name.startsWith("sb-") && c.name.includes("-auth-token")
   );
 
+  // Let auth callback and update-password through without a session
+  if (pathname.startsWith("/auth/") || pathname.startsWith("/update-password")) {
+    return NextResponse.next();
+  }
+
   // Redirect unauthenticated users to login
   if (!hasSession && !pathname.startsWith("/login")) {
     const url = request.nextUrl.clone();
