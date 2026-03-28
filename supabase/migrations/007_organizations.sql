@@ -3,13 +3,7 @@
 -- Run this in your Supabase SQL Editor
 -- ============================================================
 
--- 1. Helper functions first (required by RLS policies below)
-CREATE OR REPLACE FUNCTION get_current_user_org_id()
-RETURNS uuid AS $$
-  SELECT organization_id FROM profiles WHERE id = auth.uid()
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
-
--- 2. Organizations table
+-- 1. Organizations table (no RLS policies yet — function depends on profiles.organization_id)
 CREATE TABLE organizations (
   id         uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
   name       text NOT NULL,
@@ -21,6 +15,16 @@ CREATE TRIGGER trg_organizations_updated_at
   BEFORE UPDATE ON organizations
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
+-- 2. Add organization_id to profiles FIRST (needed by get_current_user_org_id function)
+ALTER TABLE profiles ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL;
+
+-- 3. Helper function (now profiles.organization_id exists, so SQL body is valid)
+CREATE OR REPLACE FUNCTION get_current_user_org_id()
+RETURNS uuid AS $$
+  SELECT organization_id FROM profiles WHERE id = auth.uid()
+$$ LANGUAGE sql SECURITY DEFINER STABLE;
+
+-- 4. Now enable RLS + policies on organizations (function exists now)
 ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Users can view own org"
@@ -31,37 +35,30 @@ CREATE POLICY "Admins can update own org"
   ON organizations FOR UPDATE TO authenticated
   USING (id = get_current_user_org_id() AND get_current_user_role() = 'admin');
 
--- 2. Add organization_id to all data tables
-ALTER TABLE profiles ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE SET NULL;
-ALTER TABLE categories ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE locations ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE suppliers ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE inventory_items ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+-- 5. Add organization_id to all other data tables
+ALTER TABLE categories         ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE locations          ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE suppliers          ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE inventory_items    ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
 ALTER TABLE inventory_transactions ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE buildings ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE projects ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE purchase_orders ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
-ALTER TABLE work_orders ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE buildings          ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE projects           ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE purchase_orders    ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
+ALTER TABLE work_orders        ADD COLUMN organization_id uuid REFERENCES organizations(id) ON DELETE CASCADE;
 
--- 3. Replace global unique constraints with org-scoped ones
-ALTER TABLE categories DROP CONSTRAINT IF EXISTS categories_name_key;
-ALTER TABLE locations DROP CONSTRAINT IF EXISTS locations_name_key;
-ALTER TABLE suppliers DROP CONSTRAINT IF EXISTS suppliers_name_key;
+-- 6. Replace global unique constraints with org-scoped ones
+ALTER TABLE categories     DROP CONSTRAINT IF EXISTS categories_name_key;
+ALTER TABLE locations      DROP CONSTRAINT IF EXISTS locations_name_key;
+ALTER TABLE suppliers      DROP CONSTRAINT IF EXISTS suppliers_name_key;
 ALTER TABLE inventory_items DROP CONSTRAINT IF EXISTS inventory_items_sku_key;
 ALTER TABLE inventory_items DROP CONSTRAINT IF EXISTS inventory_items_upc_key;
 
-ALTER TABLE categories ADD CONSTRAINT categories_org_name_key UNIQUE (organization_id, name);
-ALTER TABLE locations ADD CONSTRAINT locations_org_name_key UNIQUE (organization_id, name);
-ALTER TABLE suppliers ADD CONSTRAINT suppliers_org_name_key UNIQUE (organization_id, name);
+ALTER TABLE categories     ADD CONSTRAINT categories_org_name_key    UNIQUE (organization_id, name);
+ALTER TABLE locations      ADD CONSTRAINT locations_org_name_key      UNIQUE (organization_id, name);
+ALTER TABLE suppliers      ADD CONSTRAINT suppliers_org_name_key      UNIQUE (organization_id, name);
 ALTER TABLE inventory_items ADD CONSTRAINT inventory_items_org_sku_key UNIQUE (organization_id, sku);
 
--- 4. Helper to get current user's org
-CREATE OR REPLACE FUNCTION get_current_user_org_id()
-RETURNS uuid AS $$
-  SELECT organization_id FROM profiles WHERE id = auth.uid()
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
-
--- 5. Create a default org for any existing profiles without one
+-- 7. Create a default org for any existing profiles without one
 DO $$
 DECLARE
   default_org_id uuid;
@@ -73,7 +70,7 @@ BEGIN
   END IF;
 END $$;
 
--- 6. Update RLS policies to scope by org
+-- 8. Update RLS policies to scope by org
 
 -- Profiles
 DROP POLICY IF EXISTS "Users can view all profiles" ON profiles;
@@ -145,7 +142,7 @@ CREATE POLICY "Users can view org transactions"
 CREATE POLICY "Staff can insert org transactions"
   ON inventory_transactions FOR INSERT TO authenticated WITH CHECK (organization_id = get_current_user_org_id() AND get_current_user_role() IN ('admin', 'staff'));
 
--- 7. Update handle_new_user to accept org from metadata
+-- 9. Update handle_new_user to accept org from metadata
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS trigger AS $$
 BEGIN
