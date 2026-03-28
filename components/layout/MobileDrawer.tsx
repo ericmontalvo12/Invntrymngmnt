@@ -11,7 +11,6 @@ import {
   Tag,
   Building2,
   ClipboardList,
-  FolderKanban,
   Users,
   Settings,
   QrCode,
@@ -33,7 +32,6 @@ const navItems = [
   ...(features.vendors ? [{ href: "/vendors", label: "Vendors", icon: Truck, roles: ["admin", "staff", "viewer"] }] : []),
   { href: "/categories", label: "Categories", icon: Tag, roles: ["admin", "staff", "viewer"] },
   { href: "/buildings", label: "Buildings", icon: Building2, roles: ["admin", "staff", "viewer"] },
-  { href: "/projects", label: "Projects", icon: FolderKanban, roles: ["admin", "staff", "viewer"] },
   { href: "/users", label: "Users", icon: Users, roles: ["admin"] },
   { href: "/settings", label: "Settings", icon: Settings, roles: ["admin"] },
 ] as const;
@@ -65,7 +63,7 @@ export function MobileDrawer({ role, open, onClose }: MobileDrawerProps) {
       {/* Drawer panel */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-card shadow-xl transition-transform duration-300 md:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[85vw] max-w-72 flex-col bg-card shadow-xl transition-transform duration-300 md:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
