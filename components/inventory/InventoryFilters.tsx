@@ -64,7 +64,7 @@ export function InventoryFilters({ categories, buildings, suppliers }: Inventory
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="relative min-w-[220px] flex-1">
+      <div className="relative w-full flex-1 sm:min-w-[220px]">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
           className="pl-9"
@@ -78,7 +78,7 @@ export function InventoryFilters({ categories, buildings, suppliers }: Inventory
         value={searchParams.get("category") ?? ALL_VALUE}
         onValueChange={(v) => updateParam("category", v)}
       >
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="flex-1 sm:w-[150px] sm:flex-none">
           <SelectValue placeholder="Category" />
         </SelectTrigger>
         <SelectContent>
@@ -123,7 +123,7 @@ export function InventoryFilters({ categories, buildings, suppliers }: Inventory
         value={searchParams.get("stock") ?? ALL_VALUE}
         onValueChange={(v) => updateParam("stock", v)}
       >
-        <SelectTrigger className="w-[140px]">
+        <SelectTrigger className="flex-1 sm:w-[140px] sm:flex-none">
           <SelectValue placeholder="Stock" />
         </SelectTrigger>
         <SelectContent>
@@ -138,7 +138,7 @@ export function InventoryFilters({ categories, buildings, suppliers }: Inventory
         value={searchParams.get("status") ?? ALL_VALUE}
         onValueChange={(v) => updateParam("status", v)}
       >
-        <SelectTrigger className="w-[130px]">
+        <SelectTrigger className="flex-1 sm:w-[130px] sm:flex-none">
           <SelectValue placeholder="Status" />
         </SelectTrigger>
         <SelectContent>

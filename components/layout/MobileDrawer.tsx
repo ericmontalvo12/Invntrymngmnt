@@ -63,7 +63,7 @@ export function MobileDrawer({ role, open, onClose }: MobileDrawerProps) {
       {/* Drawer panel */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-card shadow-xl transition-transform duration-300 md:hidden",
+          "fixed inset-y-0 left-0 z-50 flex w-[85vw] max-w-72 flex-col bg-card shadow-xl transition-transform duration-300 md:hidden",
           open ? "translate-x-0" : "-translate-x-full"
         )}
       >
