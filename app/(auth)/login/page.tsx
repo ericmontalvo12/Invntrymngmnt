@@ -8,8 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 
-const DEMO_EMAIL = "montalvoventuresllc@gmail.com";
-const DEMO_PASSWORD = "SamCanela21%";
+const DEMO_EMAIL = "demo@invntrymngmnt.com";
+const DEMO_PASSWORD = "Demo1234%";
 
 export default function LoginPage() {
 const [email, setEmail] = useState("");
