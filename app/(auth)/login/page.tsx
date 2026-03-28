@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/client";
 
+const DEMO_EMAIL = "montalvoventuresllc@gmail.com";
+const DEMO_PASSWORD = "SamCanela21%";
+
 export default function LoginPage() {
 const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -78,6 +81,22 @@ const [email, setEmail] = useState("");
           </Button>
         </form>
       </CardContent>
+      <div className="mt-4 rounded-md border border-dashed border-muted-foreground/40 bg-muted/40 p-4 text-sm">
+        <p className="mb-2 font-medium text-muted-foreground">Demo account</p>
+        <p className="text-xs text-muted-foreground">
+          Email: <span className="font-mono">{DEMO_EMAIL}</span>
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Password: <span className="font-mono">{DEMO_PASSWORD}</span>
+        </p>
+        <button
+          type="button"
+          onClick={() => { setEmail(DEMO_EMAIL); setPassword(DEMO_PASSWORD); }}
+          className="mt-2 text-xs text-primary underline underline-offset-2 hover:opacity-80"
+        >
+          Click to fill in credentials
+        </button>
+      </div>
     </Card>
   );
 }
