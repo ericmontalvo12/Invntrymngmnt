@@ -42,7 +42,7 @@ const [email, setEmail] = useState("");
             <Package className="h-6 w-6 text-primary-foreground" />
           </div>
         </div>
-        <CardTitle className="text-2xl">invntrymngmnt</CardTitle>
+        <CardTitle className="text-2xl">OpsDesk</CardTitle>
         <CardDescription>Sign in to your account to continue</CardDescription>
       </CardHeader>
       <CardContent>
