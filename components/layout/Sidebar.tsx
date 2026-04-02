@@ -47,12 +47,14 @@ export function Sidebar({ role }: SidebarProps) {
   );
 
   return (
-    <aside className="flex h-full w-60 flex-col border-r bg-card print:hidden">
+    <aside className="flex h-full w-60 flex-col border-r bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
-        <div className="flex items-center gap-2">
-          <Package className="h-6 w-6 text-primary" />
-          <span className="text-lg font-bold">OpsDesk</span>
+      <div className="flex h-16 items-center border-b px-5">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+            <Package className="h-4 w-4 text-primary-foreground" />
+          </div>
+          <span className="text-[15px] font-semibold tracking-tight">OpsDesk</span>
         </div>
       </div>
 
@@ -70,10 +72,10 @@ export function Sidebar({ role }: SidebarProps) {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-150",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                      ? "bg-primary text-primary-foreground shadow-sm"
+                      : "text-muted-foreground hover:bg-accent hover:text-foreground"
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />

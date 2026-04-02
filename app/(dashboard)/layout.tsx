@@ -35,7 +35,7 @@ export default async function DashboardLayout({
       {/* Main content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         <TopNav profile={profile as Profile} />
-        <main className="flex-1 overflow-y-auto bg-muted/20 p-3 sm:p-6">
+        <main className="flex-1 overflow-y-auto bg-background p-4 sm:p-8">
           {children}
         </main>
       </div>

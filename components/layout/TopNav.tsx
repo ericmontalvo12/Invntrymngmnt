@@ -51,7 +51,7 @@ export function TopNav({ profile }: TopNavProps) {
         onClose={() => setDrawerOpen(false)}
       />
 
-      <header className="flex h-16 items-center justify-between border-b bg-card px-4 print:hidden">
+      <header className="flex h-14 items-center justify-between border-b bg-card px-4 print:hidden">
         {/* Hamburger — mobile only */}
         <Button
           variant="ghost"
@@ -71,8 +71,8 @@ export function TopNav({ profile }: TopNavProps) {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center gap-2 px-2">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="text-xs">{initials}</AvatarFallback>
+                <Avatar className="h-7 w-7">
+                  <AvatarFallback className="text-[11px] font-semibold bg-primary text-primary-foreground">{initials}</AvatarFallback>
                 </Avatar>
                 <div className="hidden text-left sm:block">
                   <p className="text-sm font-medium leading-none">
