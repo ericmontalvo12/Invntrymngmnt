@@ -54,7 +54,7 @@ export default async function DashboardPage() {
       />
 
       {/* Stat Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <StatCard
           title="Total Items"
           value={data.totalItems}
@@ -85,9 +85,9 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Recent Activity */}
-        <Card>
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base font-semibold">Recent Activity</CardTitle>
             <Button variant="ghost" size="sm" asChild>
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
         </Card>
 
         {/* Reorder Needed */}
-        <Card>
+        <Card className="min-w-0 overflow-hidden">
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-base font-semibold">Reorder Needed</CardTitle>
             <Button variant="ghost" size="sm" asChild>
