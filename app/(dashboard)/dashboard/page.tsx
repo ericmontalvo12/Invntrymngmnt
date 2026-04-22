@@ -102,13 +102,13 @@ export default async function DashboardPage() {
                 {data.recentTransactions.map((tx) => (
                   <div key={tx.id} className="flex items-start justify-between gap-2 text-sm">
                     <div className="min-w-0">
-                      <div className="flex items-center gap-2">
+                      <div className="flex min-w-0 items-center gap-2">
                         <TransactionTypeBadge type={tx.transaction_type} />
-                        <span className="truncate font-medium">
+                        <span className="min-w-0 truncate font-medium">
                           {tx.item?.name ?? "Unknown Item"}
                         </span>
                       </div>
-                      <p className="mt-0.5 text-xs text-muted-foreground">
+                      <p className="mt-0.5 truncate text-xs text-muted-foreground">
                         {tx.user?.full_name || tx.user?.email} · {formatDate(tx.created_at)}
                       </p>
                     </div>
@@ -148,7 +148,7 @@ export default async function DashboardPage() {
                     <div className="min-w-0">
                       <Link
                         href={`/inventory/${item.id}`}
-                        className="truncate font-medium hover:underline"
+                        className="block truncate font-medium hover:underline"
                       >
                         {item.name}
                       </Link>
