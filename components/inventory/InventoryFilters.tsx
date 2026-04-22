@@ -93,7 +93,7 @@ export function InventoryFilters({ categories, buildings, suppliers }: Inventory
         value={searchParams.get("building") ?? ALL_VALUE}
         onValueChange={(v) => updateParam("building", v)}
       >
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="flex-1 sm:w-[150px] sm:flex-none">
           <SelectValue placeholder="Building" />
         </SelectTrigger>
         <SelectContent>
@@ -108,7 +108,7 @@ export function InventoryFilters({ categories, buildings, suppliers }: Inventory
         value={searchParams.get("supplier") ?? ALL_VALUE}
         onValueChange={(v) => updateParam("supplier", v)}
       >
-        <SelectTrigger className="w-[150px]">
+        <SelectTrigger className="flex-1 sm:w-[150px] sm:flex-none">
           <SelectValue placeholder="Supplier" />
         </SelectTrigger>
         <SelectContent>
